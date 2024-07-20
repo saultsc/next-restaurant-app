@@ -1,6 +1,6 @@
 const Login = () => {
 	return (
-		<div>
+		<div className="w-96">
 			<h1 className="text-2xl font-semibold mb-4">Login</h1>
 			<form method="POST">
 				{/* Username Input */}

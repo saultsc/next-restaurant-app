@@ -5,12 +5,10 @@ import clsx from 'clsx';
 
 import {
 	IoCloseOutline,
-	IoLogInOutline,
+	IoFastFoodOutline,
 	IoLogOutOutline,
 	IoPeopleOutline,
-	IoPersonOutline,
 	IoSearchOutline,
-	IoShirtOutline,
 	IoTicketOutline,
 } from 'react-icons/io5';
 
@@ -38,14 +36,14 @@ export const Sidebar = () => {
 			{/* Sidemenu */}
 			<nav
 				className={clsx(
-					'fixed p-5 right-0 top-0 w-[500px] h-screen bg-white z-20 shadow-2xl transform transition-all duration-300',
+					'fixed p-5 right-0 top-0 w-[400px] h-screen bg-white z-20 shadow-2xl transform transition-all duration-200',
 					{
 						'translate-x-full': !isSideMenuOpen,
 					}
 				)}
 			>
 				<IoCloseOutline
-					size={50}
+					size={30}
 					className="absolute top-5 right-5 cursor-pointer"
 					onClick={() => closeMenu()}
 				/>
@@ -65,8 +63,9 @@ export const Sidebar = () => {
 				<Link
 					href={'/'}
 					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
 				>
-					<IoTicketOutline size={25} />
+					<IoTicketOutline size={20} />
 					<span className="ml-3 text-xl">Ordenes</span>
 				</Link>
 
@@ -76,25 +75,27 @@ export const Sidebar = () => {
 				<Link
 					href={'/'}
 					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
 				>
-					<IoShirtOutline size={25} />
+					<IoFastFoodOutline size={20} />
 					<span className="ml-3 text-xl">Productos</span>
 				</Link>
 
 				<Link
-					href={'/'}
+					href={'/users'}
 					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
 				>
-					<IoPeopleOutline size={25} />
+					<IoPeopleOutline size={20} />
 					<span className="ml-3 text-xl">Usuarios</span>
 				</Link>
-				<Link
-					className="absolute bottom-10 right-14 flex flex-row w-96 h-12 items-center justify-center text-white bg-red-500 hover:bg-red-700 rounded-xl"
-					href={'/auth/login'}
-				>
-					<IoLogOutOutline size={25} />
-					<span className="ml-3 text-xl">Salir</span>
-				</Link>
+
+				<div>
+					<button className="absolute bottom-10 right-16 flex flex-row w-[260px] h-12 items-center justify-center text-white bg-red-500 hover:bg-red-700 rounded-xl">
+						<IoLogOutOutline size={20} />
+						<span className="ml-3 text-xl">Salir</span>
+					</button>
+				</div>
 			</nav>
 		</div>
 	);
