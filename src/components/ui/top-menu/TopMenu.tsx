@@ -24,10 +24,10 @@ export const TopMenu = () => {
 			{/* Search, Cart, Menu */}
 			<div className="flex items-center">
 				<button
-					className="flex items-center m-2 rounded-xl transition-all hover:bg-blue-700"
+					className="flex m-2 rounded-xl transition-all hover:bg-blue-700"
 					onClick={() => openMenu()}
 				>
-					<IoMenuOutline size={25} className="mr-1" />
+					<IoMenuOutline size={25} className="mr-1 pb-[3px]" />
 					Menu
 				</button>
 			</div>

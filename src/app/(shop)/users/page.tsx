@@ -1,85 +1,53 @@
-import { Title } from '@/components';
+import { Column, UserTable } from '@/components/users/UserTable';
+import { Title } from '@/components/ui/title/Title';
+import { IoAddCircleOutline } from 'react-icons/io5';
 
-import Link from 'next/link';
-import { IoCardOutline } from 'react-icons/io5';
-import { getAllUser } from './actions/get-all-user.action';
+const userColumns: Column[] = [
+	{
+		name: 'name',
+		label: 'Nombre',
+	},
+	{
+		name: 'email',
+		label: 'Correo',
+	},
+	{
+		name: 'role',
+		label: 'Rol',
+	},
+];
+
+const userRows = [
+	{
+		name: 'Esteicy Disla Cruz',
+		email: 'esteicy123@gmail.com',
+		role: 'Administrador',
+	},
+	{
+		name: 'Carlos Saul Padilla',
+		email: 'saul022188@gmail.com',
+		role: 'Usuario',
+	},
+];
 
 export default function ProductPage() {
-	getAllUser();
-
 	return (
-		<>
-			<Title title="Users" />
+		<div className="flex flex-col justify-between">
+			<header>
+				<Title title="Usuarios" />
+			</header>
 
-			<div className="mb-10">
-				<table className="min-w-full">
-					<thead className="bg-gray-200 border-b">
-						<tr>
-							<th
-								scope="col"
-								className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-							>
-								#ID
-							</th>
-							<th
-								scope="col"
-								className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-							>
-								Nombre completo
-							</th>
-							<th
-								scope="col"
-								className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-							>
-								Estado
-							</th>
-							<th
-								scope="col"
-								className="text-sm font-medium text-gray-900 px-6 py-4 text-left"
-							>
-								Opciones
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
-							<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-								1
-							</td>
-							<td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-								Mark
-							</td>
-							<td className="flex items-center text-sm  text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-								<IoCardOutline className="text-green-800" />
-								<span className="mx-2 text-green-800">Pagada</span>
-							</td>
-							<td className="text-sm text-gray-900 font-light px-6 ">
-								<Link href="/orders/123" className="hover:underline">
-									Ver orden
-								</Link>
-							</td>
-						</tr>
+			<section className="flex flex-row w-full justify-end">
+				<button className="flex flex-row h-12 p-4 rounded-lg items-center bg-green-500 hover:bg-green-600 transition-all">
+					<IoAddCircleOutline size={25} className="mr-2" />
+					Agregar
+				</button>
+			</section>
 
-						<tr className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
-							<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-								2
-							</td>
-							<td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-								Mark
-							</td>
-							<td className="flex items-center text-sm  text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-								<IoCardOutline className="text-red-800" />
-								<span className="mx-2 text-red-800">No Pagada</span>
-							</td>
-							<td className="text-sm text-gray-900 font-light px-6 ">
-								<Link href="/orders/123" className="hover:underline">
-									Ver orden
-								</Link>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</>
+			<footer className="pt-10">
+				{/* Table */}
+				<UserTable columns={userColumns} rows={userRows} />
+			</footer>
+		</div>
 	);
 }
