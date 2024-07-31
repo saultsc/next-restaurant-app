@@ -3,8 +3,6 @@
 import { InvalidCredentialsError } from '@/error/auth.error';
 import { signToken } from '@/lib/jwt';
 import { PrismaClient } from '@prisma/client';
-import bcryptjs from 'bcryptjs';
-import { serialize } from 'cookie';
 
 interface Credentials {
 	email: string;
@@ -15,15 +13,12 @@ interface Credentials {
 interface Response {
 	ok: boolean;
 	message: string;
+	token?: string;
 }
 
 const prisma = new PrismaClient();
 
-export const login = async ({
-	email,
-	password,
-	rememberMe = false,
-}: Credentials): Promise<Response> => {
+export const login = async ({ email, password }: Credentials): Promise<Response> => {
 	try {
 		const user = await prisma.user.findFirst({
 			where: {
@@ -31,26 +26,24 @@ export const login = async ({
 			},
 		});
 
-		if (!user) throw new InvalidCredentialsError('Credenciales invalidas');
-		if (!bcryptjs.compareSync(password, user.password))
-			throw new InvalidCredentialsError('Credenciales invalidas');
-		if (rememberMe) localStorage.setItem('email', email);
+		if (!user)
+			throw new InvalidCredentialsError('Credenciales invalidas - Usuario no encontrado');
+		if (password !== user.password)
+			throw new InvalidCredentialsError('Credenciales invalidas - Contraseña incorrecta');
 
 		const token = await signToken({ userId: user.id }, '1h');
 
-		const cookie = serialize('token', token, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			maxAge: 60 * 60,
-			path: '/',
-		});
-
-		return { ok: true, message: '' };
+		return {
+			ok: true,
+			message: 'Inicio de sesión exitoso',
+			token, // Incluye el token en la respuesta
+		};
 	} catch (error) {
 		if (error instanceof InvalidCredentialsError) {
 			return { ok: false, message: error.message };
 		}
 
+		console.log(error);
 		return { ok: false, message: 'Error del servidor' };
 	}
 };

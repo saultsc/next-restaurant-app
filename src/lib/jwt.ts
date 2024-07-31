@@ -1,36 +1,31 @@
-import jwt, { SignOptions, JwtPayload as JwtPayloadBase } from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY || 'your-secret-key';
+const secret = new TextEncoder().encode(SECRET_KEY);
 
-interface JwtPayload extends JwtPayloadBase {
+interface JwtPayload {
 	userId: string;
+	[key: string]: any;
 }
+
 export const signToken = async (
 	payload: JwtPayload,
 	expiresIn: string | number = '1h'
 ): Promise<string> => {
-	const options: SignOptions = { expiresIn };
-	return new Promise((resolve, reject) => {
-		jwt.sign(payload, SECRET_KEY, options, (err, token) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(token as string);
-			}
-		});
-	});
+	const jwt = await new SignJWT(payload)
+		.setProtectedHeader({ alg: 'HS256' })
+		.setExpirationTime(expiresIn)
+		.sign(secret);
+	return jwt;
 };
 
 // Función asíncrona para verificar un token JWT
 export const verifyToken = async (token: string): Promise<JwtPayload | null> => {
-	return new Promise((resolve) => {
-		jwt.verify(token, SECRET_KEY, (err, decoded) => {
-			if (err) {
-				console.error('Token verification failed:', err);
-				resolve(null);
-			} else {
-				resolve(decoded as JwtPayload);
-			}
-		});
-	});
+	try {
+		const { payload } = await jwtVerify(token, secret);
+		return payload as JwtPayload;
+	} catch (err) {
+		console.error('Token verification failed:', err);
+		return null;
+	}
 };

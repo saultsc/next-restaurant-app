@@ -1,15 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
-import { redirect } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import { login } from './action/auth.action';
+import { useRouter } from 'next/navigation';
 
 const Login = () => {
+	const router = useRouter();
+
 	const [formData, setFormData] = useState({
 		email: '',
 		password: '',
 		remember: false,
 	});
+
+	useEffect(() => {
+		const savedEmail = localStorage.getItem('email');
+		if (savedEmail) {
+			setFormData((prevData) => ({
+				...prevData,
+				email: savedEmail,
+			}));
+		}
+	}, []);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value, type, checked } = e.target;
@@ -24,11 +36,15 @@ const Login = () => {
 		const response = await login(formData);
 
 		if (!response.ok) {
-			console.error(response.message);
 			return;
 		}
 
-		redirect('/');
+		formData.remember
+			? localStorage.setItem('email', formData.email)
+			: localStorage.removeItem('email');
+		document.cookie = `token=${response.token}; path=/; max-age=3600;`;
+
+		router.push('/');
 	};
 
 	return (
