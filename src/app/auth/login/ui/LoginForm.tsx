@@ -1,24 +1,42 @@
 'use client';
 
-import { login } from '@/action';
-import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import { useUserStore } from '@/store/auth/user.store';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import clsx from 'clsx';
 
 export const LoginForm = () => {
+	const router = useRouter();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [rememberMe, setRememberMe] = useState(false);
-	const router = useRouter(); // Mover esta línea aquí
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const login = useUserStore((state) => state.login);
+
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			setEmail(localStorage.getItem('email') || '');
+			setRememberMe(localStorage.getItem('rememberMe') === 'true');
+		}
+	}, []);
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
-
-		console.log({ email, password, rememberMe });
+		setIsSubmitting(true);
 
 		const response = await login({ email, password, rememberMe });
-		if (response.ok) {
-			router.push(response.nextRoute);
+		if (!response.ok) {
+			setTimeout(() => setIsSubmitting(false), 1000);
+			return;
 		}
+
+		rememberMe
+			? (localStorage.setItem('email', email), localStorage.setItem('rememberMe', 'true'))
+			: (localStorage.removeItem('email'), localStorage.removeItem('rememberMe'));
+
+		setTimeout(() => {
+			router.push('');
+		}, 1000);
 	};
 
 	return (
@@ -61,19 +79,23 @@ export const LoginForm = () => {
 					<label className="text-gray-600 ml-2">Recordar usuario</label>
 				</div>
 				{/* Login Button */}
-				<LoginButton />
+				<LoginButton isSubmitting={isSubmitting} />
 			</form>
 		</div>
 	);
 };
 
-function LoginButton() {
+function LoginButton({ isSubmitting }: { isSubmitting: boolean }) {
 	return (
 		<button
 			type="submit"
-			className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md py-2 px-4 w-full"
+			disabled={isSubmitting}
+			className={clsx('font-semibold rounded-md py-2 px-4 w-full', {
+				'bg-blue-500 hover:bg-blue-600 text-white': !isSubmitting,
+				'bg-gray-400 text-gray-700': isSubmitting,
+			})}
 		>
-			Ingresar
+			{isSubmitting ? 'Enviando...' : 'Ingresar'}
 		</button>
 	);
 }

@@ -2,19 +2,18 @@
 
 import { PrismaClient } from '@prisma/client';
 import { cookies } from 'next/headers';
-import { signToken } from '../../lib/jwt';
+import { signToken } from '@/lib/jwt';
 
-interface Credentials {
+export interface Credentials {
 	email: string;
 	password: string;
 	rememberMe?: boolean;
 }
 
-interface Response {
+export interface Response {
 	ok: boolean;
 	message: string;
-	token?: string;
-	nextRoute: string;
+	token: string;
 }
 
 const prisma = new PrismaClient();
@@ -24,16 +23,21 @@ export const login = async (credentials: Credentials): Promise<Response> => {
 		const user = await prisma.user.findUnique({
 			where: {
 				email: credentials.email,
+				password: credentials.password,
 			},
 		});
 
-		if (!user) return { ok: false, message: 'invalid Credentials', nextRoute: '/auth/login' };
+		if (!user) return { ok: false, message: 'invalid Credentials', token: '' };
 		const token = await signToken({ userId: user.id, role: user.role });
 
-		cookies().set('token', token, { maxAge: 3600 });
+		cookies().set('token', token, { 
+			expires: new Date(Date.now() + 2 * 60 * 60 * 1000), 
+			httpOnly: true, 
+			maxAge: 7200,
+	});
 
-		return { ok: true, message: 'Inicio exitoso', nextRoute: '/' };
+		return { ok: true, message: 'Inicio exitoso', token };
 	} catch (error) {
-		return { ok: false, message: 'Error del servidor', nextRoute: '/auth/login' };
+		return { ok: false, message: 'Error del servidor', token: '' };
 	}
 };

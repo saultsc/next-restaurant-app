@@ -1,38 +1,34 @@
-'use server';
+import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 
-import { SignJWT, jwtVerify } from 'jose';
+const SECRET_KEY = new TextEncoder().encode('your-secret-key');
 
-const SECRET_KEY = process.env.JWT_SECRET_KEY || 'your-secret-key';
-const secret = new TextEncoder().encode(SECRET_KEY);
-
-interface JwtPayload {
-	userId: string;
-	[key: string]: any;
+interface JwtPayload extends JWTPayload {
+    userId: string;
+    [key: string]: any;
 }
 
 export const signToken = async (
-	payload: JwtPayload,
-	expiresIn: string | number = '1h'
+    payload: JwtPayload,
+    expiresIn: string = '1h'
 ): Promise<string> => {
-	const jwt = await new SignJWT(payload)
-		.setProtectedHeader({ alg: 'HS256' })
-		.setExpirationTime(expiresIn)
-		.sign(secret);
-	return jwt;
+    const token = await new SignJWT(payload)
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime(expiresIn)
+        .sign(SECRET_KEY);
+    return token;
 };
 
-// Función asíncrona para verificar un token JWT
 export const verifyToken = async (token: string | undefined): Promise<JwtPayload | null> => {
-	if (!token) {
-		console.error('Token is undefined');
-		return null;
-	}
+    if (!token) {
+        console.error('Token is undefined');
+        return null;
+    }
 
-	try {
-		const { payload } = await jwtVerify(token, secret);
-		return payload as JwtPayload;
-	} catch (err) {
-		console.error('Token verification failed:', err);
-		return null;
-	}
+    try {
+        const { payload } = await jwtVerify(token, SECRET_KEY);
+        return payload as JwtPayload;
+    } catch (err) {
+        console.error('Token verification failed:', err);
+        return null;
+    }
 };

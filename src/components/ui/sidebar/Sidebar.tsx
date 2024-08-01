@@ -13,10 +13,25 @@ import {
 } from 'react-icons/io5';
 
 import { useUiStore } from '@/store';
+import { useUserStore } from '@/store/auth/user.store';
+import { useRouter } from 'next/navigation';
 
 export const Sidebar = () => {
+	const router = useRouter();
 	const isSideMenuOpen = useUiStore((state) => state.isSideMenuOpen);
 	const closeMenu = useUiStore((state) => state.closeSideMenu);
+	const logout = useUserStore((state) => state.logout);
+	const isUserAdmin = useUserStore((state) => state.isAdmin)
+
+
+	const onLogout = () => {
+		closeMenu();
+
+		setTimeout(() => {
+			logout();
+			router.push('/auth/login');
+		}, 200);
+	}
 
 	return (
 		<div>
@@ -81,7 +96,7 @@ export const Sidebar = () => {
 					<span className="ml-3 text-xl">Productos</span>
 				</Link>
 
-				{
+				{ !isUserAdmin && ( 
 					<Link
 						href={'/users'}
 						className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
@@ -90,10 +105,10 @@ export const Sidebar = () => {
 						<IoPeopleOutline size={20} />
 						<span className="ml-3 text-xl">Usuarios</span>
 					</Link>
-				}
+				)}
 
 				<div>
-					<button className="absolute bottom-10 right-16 flex flex-row w-[260px] h-12 items-center justify-center text-white bg-red-500 hover:bg-red-700 rounded-xl">
+					<button onClick={onLogout} className="absolute bottom-10 right-16 flex flex-row w-[260px] h-12 items-center justify-center text-white bg-red-500 hover:bg-red-700 rounded-xl">
 						<IoLogOutOutline size={20} />
 						<span className="ml-3 text-xl">Salir</span>
 					</button>
