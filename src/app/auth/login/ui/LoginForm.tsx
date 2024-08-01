@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { useUiStore } from '@/store';
+import { useToast } from '@/components/ui/use-toast';
 
 export const LoginForm = () => {
+    const { toast } = useToast()
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -21,7 +23,7 @@ export const LoginForm = () => {
             setRememberMe(localStorage.getItem('rememberMe') === 'true');
         }
         closeSideMenu();
-    }, [closeSideMenu]);
+    }, []);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -29,7 +31,15 @@ export const LoginForm = () => {
 
         const response = await login({ email, password, rememberMe });
         if (!response.ok) {
-            setTimeout(() => setIsSubmitting(false), 500);
+            setTimeout(() => {
+                setIsSubmitting(false);
+                toast({
+                    variant: "destructive",
+                    description: response.message,
+                    duration: 1000,
+                });
+            }, 500);
+    
             return;
         }
 

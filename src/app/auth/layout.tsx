@@ -1,3 +1,5 @@
+import { Toaster } from "@/components/ui/toaster";
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<main className="">
@@ -6,6 +8,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 				<div className="lg:p-36 md:p-52 p-8 lg:w-1/2 flex justify-center items-center">
 					{children}
 				</div>
+				<Toaster />
 			</div>
 		</main>
 	);

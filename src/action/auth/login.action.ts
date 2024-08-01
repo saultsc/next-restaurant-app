@@ -27,7 +27,7 @@ export const login = async (credentials: Credentials): Promise<Response> => {
 			},
 		});
 
-		if (!user) return { ok: false, message: 'invalid Credentials', token: '' };
+		if (!user) return { ok: false, message: 'Credenciales Incorrectas', token: '' };
 		const token = await signToken({ userId: user.id, role: user.role });
 
 		cookies().set('token', token, { 
