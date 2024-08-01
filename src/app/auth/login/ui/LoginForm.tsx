@@ -35,7 +35,7 @@ export const LoginForm = () => {
                 setIsSubmitting(false);
                 toast({
                     variant: "destructive",
-                    description: response.message,
+                    description: response.message === 'Credenciales Incorrectas' ? 'Credenciales Incorrectas' : 'Mantenimiento del servidor',
                     duration: 1000,
                 });
             }, 500);
