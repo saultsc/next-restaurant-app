@@ -21,17 +21,14 @@ export const Sidebar = () => {
 	const isSideMenuOpen = useUiStore((state) => state.isSideMenuOpen);
 	const closeMenu = useUiStore((state) => state.closeSideMenu);
 	const logout = useUserStore((state) => state.logout);
-	const isUserAdmin = useUserStore((state) => state.isAdmin)
-
+	const isUserAdmin = useUserStore((state) => state.isAdmin);
 
 	const onLogout = () => {
-		closeMenu();
-
 		setTimeout(() => {
 			logout();
-			router.push('/auth/login');
-		}, 200);
-	}
+			router.replace('/login');
+		}, 100);
+	};
 
 	return (
 		<div>
@@ -96,7 +93,7 @@ export const Sidebar = () => {
 					<span className="ml-3 text-xl">Productos</span>
 				</Link>
 
-				{ !isUserAdmin && ( 
+				{isUserAdmin && (
 					<Link
 						href={'/users'}
 						className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
@@ -108,7 +105,10 @@ export const Sidebar = () => {
 				)}
 
 				<div>
-					<button onClick={onLogout} className="absolute bottom-10 right-16 flex flex-row w-[260px] h-12 items-center justify-center text-white bg-red-500 hover:bg-red-700 rounded-xl">
+					<button
+						onClick={onLogout}
+						className="absolute bottom-10 right-16 flex flex-row w-[260px] h-12 items-center justify-center text-white bg-red-500 hover:bg-red-700 rounded-xl"
+					>
 						<IoLogOutOutline size={20} />
 						<span className="ml-3 text-xl">Salir</span>
 					</button>

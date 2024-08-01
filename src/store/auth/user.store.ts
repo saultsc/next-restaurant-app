@@ -2,6 +2,7 @@ import { Credentials, login } from '@/action';
 import { logout } from '@/action/auth/logout.action';
 import { verifyToken } from '@/lib/jwt';
 import { create } from 'zustand';
+import { useUiStore } from '../ui/ui-store';
 
 interface Response {
 	ok: boolean;
@@ -9,7 +10,6 @@ interface Response {
 }
 
 interface UserStore {
-	isAuthorized: boolean;
 	userId: string;
 	isAdmin: boolean;
 	login(credentials: Credentials): Promise<Response>;
@@ -17,7 +17,6 @@ interface UserStore {
 }
 
 export const useUserStore = create<UserStore>((set) => ({
-	isAuthorized: false,
 	userId: '',
 	isAdmin: false,
 	login: async (credentials: Credentials) => {
@@ -27,18 +26,18 @@ export const useUserStore = create<UserStore>((set) => ({
 			const data = await verifyToken(response.token);
 			if (!data) return { ok: false, message: 'Token no valido' };
 
-			set({ isAuthorized: true, userId: data.userId, isAdmin: data.role === 'admin' });
+			set({ userId: data.userId, isAdmin: data.role === 'admin' });
 			return {
 				ok: true,
 				message: response.message,
 			};
 		} catch (error) {
-			set({ isAuthorized: false, userId: '', isAdmin: false });
-			return { ok: false, message: 'Error del servidor', nextRoute: '/auth/login' };
+			set({  userId: '', isAdmin: false });
+			return { ok: false, message: 'Error del servidor', };
 		}
 	},
 	logout: () => {
 		logout();
-		set({ isAuthorized: false, userId: '', isAdmin: false });
+		set({ userId: '' });
 	},
 }));
