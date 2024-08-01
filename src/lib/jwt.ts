@@ -1,3 +1,5 @@
+'use server';
+
 import { SignJWT, jwtVerify } from 'jose';
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY || 'your-secret-key';
@@ -20,7 +22,12 @@ export const signToken = async (
 };
 
 // Función asíncrona para verificar un token JWT
-export const verifyToken = async (token: string): Promise<JwtPayload | null> => {
+export const verifyToken = async (token: string | undefined): Promise<JwtPayload | null> => {
+	if (!token) {
+		console.error('Token is undefined');
+		return null;
+	}
+
 	try {
 		const { payload } = await jwtVerify(token, secret);
 		return payload as JwtPayload;
