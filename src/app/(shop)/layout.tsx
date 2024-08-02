@@ -1,4 +1,4 @@
-import { Footer, Sidebar, TopMenu } from '@/components';
+import { Sidebar, TopMenu } from '@/components';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -7,8 +7,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 			<Sidebar />
 
 			<div className="px-0 sm:px-10">{children}</div>
-
-			<Footer />
 		</main>
 	);
 }
