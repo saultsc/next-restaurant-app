@@ -10,3 +10,12 @@ export * from './ui/not-found/PageNotfound';
 export * from './ui/title/Title';
 export * from './ui/top-menu/TopMenu';
 export * from './ui/sidebar/Sidebar';
+export * from './ui/pagination/Pagination';
+export * from './ui/badge';
+export * from './ui/button';
+export * from './ui/table';
+export * from './ui/input';
+export * from './ui/card';
+export * from './ui/toast';
+
+export * from './users/user-modal/UserModal';
