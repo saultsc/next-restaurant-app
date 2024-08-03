@@ -5,12 +5,12 @@ interface State {
 	isSaving: boolean;
 	isEditing: boolean;
 	isDeleting: boolean;
-	dialogContent: React.ReactNode;
 	dialogTitle: string;
-	currentItemId: string | number | null;
+	currentItemId: number | null;
 
 	openDialog: () => void;
-	openDialogEditMode: (title: string, content: React.ReactNode) => void;
+	openDialogUpdateMode: (title: string, itemId: number) => void;
+	openDialogDeleteMode: (title: string, itemId: number) => void;
 	closeDialog: () => void;
 }
 
@@ -19,7 +19,6 @@ export const useDialogStore = create<State>((set) => ({
 	isSaving: false,
 	isEditing: false,
 	isDeleting: false,
-	dialogContent: null,
 	dialogTitle: '',
 	currentItemId: null,
 
@@ -30,8 +29,16 @@ export const useDialogStore = create<State>((set) => ({
 			isDeleting: false,
 		});
 	},
-	openDialogEditMode(title: string, content: React.ReactNode) {
-		set({ isDialogOpen: true, isEditing: true, dialogContent: content, dialogTitle: title });
+	openDialogUpdateMode(title: string, itemId: number) {
+		set({
+			isDialogOpen: true,
+			isEditing: true,
+			dialogTitle: title,
+			currentItemId: itemId,
+		});
+	},
+	openDialogDeleteMode(title: string, itemId: number) {
+		set({ isDialogOpen: true, isDeleting: true, dialogTitle: title, currentItemId: itemId });
 	},
 	closeDialog() {
 		set({
@@ -39,7 +46,6 @@ export const useDialogStore = create<State>((set) => ({
 			isSaving: false,
 			isEditing: false,
 			isDeleting: false,
-			dialogContent: null,
 			dialogTitle: '',
 			currentItemId: null,
 		});

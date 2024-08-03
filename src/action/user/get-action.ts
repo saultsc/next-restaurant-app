@@ -5,21 +5,35 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 interface QueryParams {
-	currentPage: number;
-	rowPerPage: number;
+	id?: string | number;
+	currentPage?: number;
+	rowPerPage?: number;
 	search?: string;
 }
 
 export const getAction = async (queryParams: QueryParams) => {
-	const { currentPage, rowPerPage, search } = queryParams;
+	const { id, currentPage = 1, rowPerPage = 10, search } = queryParams;
 
 	try {
+		if (id) {
+			const user = await prisma.user.findUnique({
+				where: { id: Number(id) },
+			});
+			return {
+				ok: true,
+				data: user ? [user] : [],
+				pagination: {
+					totalRecords: user ? 1 : 0,
+					totalPages: 1,
+					currentPage: 1,
+					rowPerPage: 1,
+				},
+			};
+		}
+
 		const where = search
 			? {
-					OR: [
-						{ name: { contains: search, mode: 'insensitive' } },
-						{ email: { contains: search, mode: 'insensitive' } },
-					],
+					OR: [{ fullName: { contains: search } }, { email: { contains: search } }],
 			  }
 			: {};
 
@@ -30,11 +44,9 @@ export const getAction = async (queryParams: QueryParams) => {
 			take: rowPerPage,
 		});
 
-		if (!data.length) return { ok: false, message: 'No data found' };
-
 		return {
 			ok: true,
-			data,
+			data: data.length ? data : [],
 			pagination: {
 				totalRecords,
 				totalPages: Math.ceil(totalRecords / rowPerPage),
@@ -43,8 +55,17 @@ export const getAction = async (queryParams: QueryParams) => {
 			},
 		};
 	} catch (error: unknown) {
-		console.error('Error fetching data:', error);
-		return { ok: false, message: 'Server error' };
+		console.log('Error fetching data:', error);
+		return {
+			ok: false,
+			data: [],
+			pagination: {
+				totalRecords: 0,
+				totalPages: 0,
+				currentPage: 1,
+				rowPerPage: 10,
+			},
+		};
 	} finally {
 		await prisma.$disconnect();
 	}

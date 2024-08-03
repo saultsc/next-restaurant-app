@@ -1,5 +1,7 @@
 'use client';
 
+import { getAction } from '@/action/user/get-action';
+import { postAction } from '@/action/user/post-action';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,14 +13,78 @@ import {
 } from '@/components/ui/select';
 import { useDialogStore } from '@/store';
 import clsx from 'clsx';
-import { useState } from 'react';
-import { IoCloseCircleOutline, IoSaveOutline } from 'react-icons/io5';
+import { useState, useEffect } from 'react';
+import { IoCloseCircleOutline, IoCloseOutline, IoSaveOutline } from 'react-icons/io5';
 
-export const UserModal = () => {
+type Role = 'admin' | 'user';
+
+type UserModalProps = {
+	addUser: (user: any) => void;
+	updateUser: (user: any) => void;
+};
+
+export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 	const isDialogOpen = useDialogStore((store) => store.isDialogOpen);
 	const closeDialog = useDialogStore((store) => store.closeDialog);
+	const isEditing = useDialogStore((store) => store.isEditing);
+	const currentItemId = useDialogStore((store) => store.currentItemId);
 
-	const [selectedRole, setSelectedRole] = useState('');
+	const [fullName, setFullName] = useState('');
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [selectedRole, setSelectedRole] = useState<Role | ''>('');
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			if (isEditing && currentItemId) {
+				try {
+					const response = await getAction({ id: currentItemId });
+					const user = response.data[0];
+
+					if (user) {
+						setFullName(user.fullName);
+						setEmail(user.email);
+						setPassword(user.password);
+						setSelectedRole(user.role as Role);
+					}
+				} catch (error) {
+					console.error('Error fetching user:', error);
+				}
+			}
+		};
+
+		fetchUser();
+	}, [isEditing, currentItemId]);
+
+	useEffect(() => {
+		if (!isEditing && isDialogOpen) {
+			setFullName('');
+			setEmail('');
+			setPassword('');
+			setSelectedRole('');
+		}
+	}, [isEditing, isDialogOpen]);
+
+	const handleSubmit = async (event: React.FormEvent) => {
+		event.preventDefault();
+		try {
+			const newUser = {
+				fullName,
+				email,
+				password,
+				role: selectedRole as Role,
+			};
+			if (isEditing && currentItemId) {
+				await updateUser({ ...newUser, id: currentItemId });
+			} else {
+				await postAction(newUser);
+				addUser(newUser);
+			}
+			closeDialog();
+		} catch (error) {
+			console.error('Error creating/updating user:', error);
+		}
+	};
 
 	return (
 		<div>
@@ -48,17 +114,42 @@ export const UserModal = () => {
 					}
 				)}
 			>
-				<header className="w-full h-16 border-b-2 bg-blue-500 rounded-t-sm text-white p-4">
-					<h1 className="font-bold text-xl">Creando usuario</h1>
+				<header className="flex justify-between w-full h-16 border-b-2 bg-blue-500 rounded-t-sm text-white p-4">
+					<h1 className="font-bold text-xl">
+						{isEditing ? 'Editando usuario' : 'Creando usuario'}
+					</h1>
+					<IoCloseOutline
+						onClick={closeDialog}
+						size={30}
+						className="cursor-pointer hover:text-black/80"
+					/>
 				</header>
-				<form action="">
+				<form onSubmit={handleSubmit}>
 					<div className="h-full flex-col p-4 justify-between">
 						<section className="space-y-4">
-							<Input type="text" placeholder="Nombre completo" />
-							<Input type="email" placeholder="Correo" />
-							<Input type="password" placeholder="Contraseña" />
+							<Input
+								type="text"
+								placeholder="Nombre completo"
+								value={fullName}
+								onChange={(e) => setFullName(e.target.value)}
+							/>
+							<Input
+								type="email"
+								placeholder="Correo"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+							/>
+							<Input
+								type="password"
+								placeholder="Contraseña"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+							/>
 							<div className="relative">
-								<Select value={selectedRole} onValueChange={setSelectedRole}>
+								<Select
+									value={selectedRole}
+									onValueChange={(value: Role | '') => setSelectedRole(value)}
+								>
 									<SelectTrigger>
 										<SelectValue placeholder="Roles" />
 									</SelectTrigger>
@@ -77,13 +168,16 @@ export const UserModal = () => {
 							</div>
 						</section>
 						<footer className="flex justify-end p-4 m-auto">
-							<Button
-								variant="default"
-								className="bg-green-600 hover:bg-green-700 text-white"
-							>
-								<IoSaveOutline size={20} className="mr-2" />
-								AGREGAR
-							</Button>
+							{
+								<Button
+									type="submit"
+									variant="default"
+									className="bg-green-600 hover:bg-green-700 text-white"
+								>
+									<IoSaveOutline size={20} className="mr-2" />
+									{isEditing ? 'ACTUALIZAR' : 'AGREGAR'}
+								</Button>
+							}
 						</footer>
 					</div>
 				</form>

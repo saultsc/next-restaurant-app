@@ -14,40 +14,58 @@ import {
 	TableCell,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { IoAddOutline, IoSearchOutline } from 'react-icons/io5';
+import { IoAddOutline, IoSearchOutline, IoTrashOutline, IoPencilOutline } from 'react-icons/io5';
 import { useDialogStore } from '@/store';
 import { getAction } from '@/action/user/get-action';
+import { patchAction } from '@/action/user/patch-action'; // Import the patchAction function
 import { User } from '@/interfaces';
 
 export default function Component() {
 	const openDialog = useDialogStore((store) => store.openDialog);
-	const [users, setUsers] = useState([] as any);
+	const [users, setUsers] = useState<User[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [rowPerPage] = useState(10);
-	const [search, setSearch] = useState('');
+	const [search, setSearch] = useState<string>('');
 	const [totalPages, setTotalPages] = useState(1);
 
 	const fetchData = async () => {
 		const queryParams = { currentPage, rowPerPage, search };
 		const result = await getAction(queryParams);
-		if (result.ok && result.data) {
-			setUsers(result.data);
-			setTotalPages(result.pagination.totalPages);
-		} else {
-			// Manejar error
-			console.log(result.message);
-		}
+
+		setUsers(result.data as any);
+		setTotalPages(result.pagination.totalPages);
 	};
 
-	// Efecto para obtener datos cuando cambian la página actual o el término de búsqueda
 	useEffect(() => {
 		fetchData();
 	}, [currentPage, search]);
 
-	// Manejar la búsqueda y reiniciar la página actual a 1
 	const handleSearch = () => {
 		setCurrentPage(1);
 		fetchData();
+	};
+
+	const openDialogUpdateMode = useDialogStore((store) => store.openDialogUpdateMode);
+	const openDialogDeleteMode = useDialogStore((store) => store.openDialogDeleteMode);
+
+	const addUser = (newUser: User) => {
+		setUsers((prevUsers) => [...prevUsers, { ...newUser, id: prevUsers.length + 1 }]);
+	};
+
+	const updateUser = async (updatedUser: User) => {
+		try {
+			const result = await patchAction(updatedUser as any);
+
+			setUsers((prevUsers: any) =>
+				prevUsers.map((user: any) => (user.id === updatedUser.id ? result : user))
+			);
+		} catch (error) {
+			console.error('Error updating user:', error);
+		}
+	};
+
+	const deleteUser = (userId: number) => {
+		setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
 	};
 
 	return (
@@ -94,10 +112,11 @@ export default function Component() {
 									<TableHead>Nombre</TableHead>
 									<TableHead>Correo</TableHead>
 									<TableHead>Role</TableHead>
+									<TableHead>Acciones</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{users.map((user: User) => (
+								{users.map((user: any) => (
 									<TableRow key={user.id}>
 										<TableCell>{user.id}</TableCell>
 										<TableCell>{user.fullName}</TableCell>
@@ -108,6 +127,23 @@ export default function Component() {
 													? 'Administrador'
 													: 'Usuario'}
 											</Badge>
+										</TableCell>
+										<TableCell>
+											<Button
+												variant="default"
+												className="bg-yellow-500 hover:bg-yellow-600 text-white mr-2"
+												onClick={() =>
+													openDialogUpdateMode('Actualizando', user.id)
+												}
+											>
+												<IoPencilOutline size={16} />
+											</Button>
+											<Button
+												variant="default"
+												className="bg-red-500 hover:bg-red-600 text-white"
+											>
+												<IoTrashOutline size={16} />
+											</Button>
 										</TableCell>
 									</TableRow>
 								))}
@@ -124,7 +160,7 @@ export default function Component() {
 				</CardContent>
 			</Card>
 
-			<UserModal />
+			<UserModal addUser={addUser} updateUser={updateUser} />
 		</div>
 	);
 }
