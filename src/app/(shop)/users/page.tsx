@@ -19,9 +19,12 @@ import { useDialogStore } from '@/store';
 import { getAction } from '@/action/user/get-action';
 import { patchAction } from '@/action/user/patch-action'; // Import the patchAction function
 import { User } from '@/interfaces';
+import { ReconfirmModal } from '@/components/reconfirm-modal/ReconfirmModal';
 
 export default function Component() {
 	const openDialog = useDialogStore((store) => store.openDialog);
+	const openDialogDeleteMode = useDialogStore((store) => store.openDialogDeleteMode);
+	const openDialogUpdateMode = useDialogStore((store) => store.openDialogUpdateMode);
 	const [users, setUsers] = useState<User[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [rowPerPage] = useState(10);
@@ -45,9 +48,6 @@ export default function Component() {
 		fetchData();
 	};
 
-	const openDialogUpdateMode = useDialogStore((store) => store.openDialogUpdateMode);
-	const openDialogDeleteMode = useDialogStore((store) => store.openDialogDeleteMode);
-
 	const addUser = (newUser: User) => {
 		setUsers((prevUsers) => [...prevUsers, { ...newUser, id: prevUsers.length + 1 }]);
 	};
@@ -66,6 +66,10 @@ export default function Component() {
 
 	const deleteUser = (userId: number) => {
 		setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+	};
+
+	const handleDeleteClick = (userId: number) => {
+		openDialogDeleteMode('Confirmar Eliminación', userId);
 	};
 
 	return (
@@ -141,6 +145,7 @@ export default function Component() {
 											<Button
 												variant="default"
 												className="bg-red-500 hover:bg-red-600 text-white"
+												onClick={() => handleDeleteClick(user.id)}
 											>
 												<IoTrashOutline size={16} />
 											</Button>
@@ -161,6 +166,7 @@ export default function Component() {
 			</Card>
 
 			<UserModal addUser={addUser} updateUser={updateUser} />
+			<ReconfirmModal deleteUser={deleteUser} />
 		</div>
 	);
 }

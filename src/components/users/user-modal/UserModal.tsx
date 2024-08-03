@@ -24,7 +24,7 @@ type UserModalProps = {
 };
 
 export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
-	const isDialogOpen = useDialogStore((store) => store.isDialogOpen);
+	const isDialogOpen = useDialogStore((store) => store.isDialogOpen && !store.isDeleting);
 	const closeDialog = useDialogStore((store) => store.closeDialog);
 	const isEditing = useDialogStore((store) => store.isEditing);
 	const currentItemId = useDialogStore((store) => store.currentItemId);
