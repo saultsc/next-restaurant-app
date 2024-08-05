@@ -55,7 +55,6 @@ export const getAction = async (queryParams: QueryParams) => {
 			},
 		};
 	} catch (error: unknown) {
-		console.log('Error fetching data:', error);
 		return {
 			ok: false,
 			data: [],

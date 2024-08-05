@@ -20,6 +20,7 @@ import { getAction } from '@/action/user/get-action';
 import { patchAction } from '@/action/user/patch-action'; // Import the patchAction function
 import { User } from '@/interfaces';
 import { ReconfirmModal } from '@/components/reconfirm-modal/ReconfirmModal';
+import { deleteAction } from '@/action/user/delete-action';
 
 export default function Component() {
 	const openDialog = useDialogStore((store) => store.openDialog);
@@ -64,8 +65,13 @@ export default function Component() {
 		}
 	};
 
-	const deleteUser = (userId: number) => {
-		setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+	const deleteUser = async (userId: number) => {
+		try {
+			await deleteAction(userId);
+			setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+		} catch (error) {
+			console.log('Error deleting user:', error);
+		}
 	};
 
 	const handleDeleteClick = (userId: number) => {

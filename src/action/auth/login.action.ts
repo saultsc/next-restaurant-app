@@ -28,13 +28,12 @@ export const login = async (credentials: Credentials): Promise<Response> => {
 		});
 
 		if (!user) return { ok: false, message: 'Credenciales Incorrectas', token: '' };
-		const token = await signToken({ userId: user.id, role: user.role });
+		const token = await signToken({ userId: user.id, role: user.role === 'admin' });
 
-		cookies().set('token', token, { 
-			expires: new Date(Date.now() + 2 * 60 * 60 * 1000), 
-			httpOnly: true, 
+		cookies().set('token', token, {
+			expires: new Date(Date.now() + 2 * 60 * 60 * 1000),
 			maxAge: 7200,
-	});
+		});
 
 		return { ok: true, message: 'Inicio exitoso', token };
 	} catch (error) {

@@ -3,7 +3,8 @@ import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 const SECRET_KEY = new TextEncoder().encode('your-secret-key');
 
 interface JwtPayload extends JWTPayload {
-	userId: string;
+	userId: number;
+	role: boolean;
 	[key: string]: any;
 }
 

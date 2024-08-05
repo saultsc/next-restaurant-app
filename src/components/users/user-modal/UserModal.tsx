@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { useDialogStore } from '@/store';
 import clsx from 'clsx';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { IoCloseCircleOutline, IoCloseOutline, IoSaveOutline } from 'react-icons/io5';
 
 type Role = 'admin' | 'user';
@@ -34,6 +34,15 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 	const [password, setPassword] = useState('');
 	const [selectedRole, setSelectedRole] = useState<Role | ''>('');
 
+	const isMounted = useRef(false);
+
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
+
 	useEffect(() => {
 		const fetchUser = async () => {
 			if (isEditing && currentItemId) {
@@ -41,7 +50,7 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 					const response = await getAction({ id: currentItemId });
 					const user = response.data[0];
 
-					if (user) {
+					if (user && isMounted.current) {
 						setFullName(user.fullName);
 						setEmail(user.email);
 						setPassword(user.password);
@@ -105,83 +114,83 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 			)}
 
 			{/* Dialog */}
-			<div
-				className={clsx(
-					'fixed top-1/2 left-1/2 w-[700px] h-[600px] rounded-sm bg-white z-20 shadow-2xl transform transition-all duration-200',
-					{
-						'opacity-0 scale-50': !isDialogOpen,
-						'opacity-100 scale-100 -translate-x-1/2 -translate-y-1/2': isDialogOpen,
-					}
-				)}
-			>
-				<header className="flex justify-between w-full h-16 border-b-2 bg-blue-500 rounded-t-sm text-white p-4">
-					<h1 className="font-bold text-xl">
-						{isEditing ? 'Editando usuario' : 'Creando usuario'}
-					</h1>
-					<IoCloseOutline
-						onClick={closeDialog}
-						size={30}
-						className="cursor-pointer hover:text-black/80"
-					/>
-				</header>
-				<form onSubmit={handleSubmit}>
-					<div className="h-full flex-col p-4 justify-between">
-						<section className="space-y-4">
-							<Input
-								type="text"
-								placeholder="Nombre completo"
-								value={fullName}
-								onChange={(e) => setFullName(e.target.value)}
-							/>
-							<Input
-								type="email"
-								placeholder="Correo"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-							/>
-							<Input
-								type="password"
-								placeholder="Contraseña"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-							/>
-							<div className="relative">
-								<Select
-									value={selectedRole}
-									onValueChange={(value: Role | '') => setSelectedRole(value)}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Roles" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="admin">Administrador</SelectItem>
-										<SelectItem value="user">Usuario</SelectItem>
-									</SelectContent>
-								</Select>
-								{selectedRole && (
-									<IoCloseCircleOutline
-										size={20}
-										onClick={() => setSelectedRole('')}
-										className="absolute top-1/2 right-8 transform -translate-y-1/2 cursor-pointer"
-									/>
-								)}
-							</div>
-						</section>
-						<footer className="flex justify-end p-4 m-auto">
-							{
+			{
+				<div
+					className={clsx(
+						'fixed top-1/2 left-1/2 w-[700px] h-[360px] rounded-sm bg-white z-20 shadow-2xl transform transition-all duration-200',
+						{
+							'opacity-0 scale-50': !isDialogOpen,
+							'opacity-100 scale-100 -translate-x-1/2 -translate-y-1/2': isDialogOpen,
+						}
+					)}
+				>
+					<header className="flex justify-between w-full h-16 border-b-2 bg-blue-500 rounded-t-sm text-white p-4">
+						<h1 className="font-bold text-xl">
+							{isEditing ? 'Editando usuario' : 'Creando usuario'}
+						</h1>
+						<IoCloseOutline
+							onClick={closeDialog}
+							size={30}
+							className="cursor-pointer hover:text-black/80"
+						/>
+					</header>
+					<form onSubmit={handleSubmit}>
+						<div className="h-full flex-col p-4 justify-between">
+							<section className="space-y-4">
+								<Input
+									type="text"
+									placeholder="Nombre completo"
+									value={fullName}
+									onChange={(e) => setFullName(e.target.value)}
+								/>
+								<Input
+									type="email"
+									placeholder="Correo"
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+								/>
+								<Input
+									type="password"
+									placeholder="Contraseña"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+								/>
+								<div className="relative">
+									<Select
+										value={selectedRole}
+										onValueChange={(value: Role | '') => setSelectedRole(value)}
+									>
+										<SelectTrigger>
+											<SelectValue placeholder="Roles" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="admin">Administrador</SelectItem>
+											<SelectItem value="user">Usuario</SelectItem>
+										</SelectContent>
+									</Select>
+									{selectedRole && (
+										<IoCloseCircleOutline
+											size={20}
+											onClick={() => setSelectedRole('')}
+											className="absolute top-1/2 right-8 transform -translate-y-1/2 cursor-pointer"
+										/>
+									)}
+								</div>
+							</section>
+							<footer className="flex justify-end mt-4">
 								<Button
 									type="submit"
 									variant="default"
-									className="bg-green-600 hover:bg-green-700 text-white"
+									className="bg-green-600 hover:bg-green-700 w-full text-white"
 								>
 									<IoSaveOutline size={20} className="mr-2" />
 									{isEditing ? 'ACTUALIZAR' : 'AGREGAR'}
 								</Button>
-							}
-						</footer>
-					</div>
-				</form>
-			</div>
+							</footer>
+						</div>
+					</form>
+				</div>
+			}
 		</div>
 	);
 };
