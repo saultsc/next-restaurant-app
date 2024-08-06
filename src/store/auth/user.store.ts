@@ -1,5 +1,6 @@
 import { Credentials, login } from '@/action';
 import { logout } from '@/action/auth/logout.action';
+import { getAction } from '@/action/user/get-action';
 import { verifyToken } from '@/lib/jwt';
 import { create } from 'zustand';
 
@@ -30,7 +31,8 @@ export const useUserStore = create<UserStore>((set) => ({
 			const data = await verifyToken(response.token);
 			if (!data) return { ok: false, message: 'Token no válido' };
 
-			set({ userId: data.userId, isAdmin: data.role });
+			const user = await getAction({ id: data.userId });
+			set({ userId: user.data[0].id, isAdmin: user.data[0].role === 'admin' });
 			return {
 				ok: true,
 				message: response.message,
@@ -42,22 +44,23 @@ export const useUserStore = create<UserStore>((set) => ({
 	},
 	logout: () => {
 		logout();
-		set({ userId: null, isAdmin: false });
+		set({ userId: null });
 	},
 	rechargeInfo: async () => {
 		const token = getCookie('token');
 		if (!token) {
-			set({ userId: null, isAdmin: false });
+			set({ userId: null });
 			return;
 		}
 
 		const data = await verifyToken(token);
 		if (!data) {
-			set({ userId: null, isAdmin: false });
+			set({ userId: null });
 			return;
 		}
 
-		set({ userId: data.userId, isAdmin: data.role });
+		const user = await getAction({ id: data.userId });
+		set({ userId: user.data[0].id, isAdmin: user.data[0].role === 'admin' });
 	},
 	initialize: () => {
 		useUserStore.getState().rechargeInfo();

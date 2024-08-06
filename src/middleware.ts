@@ -13,19 +13,10 @@ export async function middleware(request: NextRequest) {
 	}
 
 	try {
-		const decodedToken: any = await verifyToken(token);
-
-		// Verificar si la ruta es /users y si el usuario no es administrador
-		if (pathname.startsWith('/users') && !decodedToken.role) {
-			return NextResponse.redirect(new URL('/', request.url));
-		}
-
-		// Redirigir a la página principal si el token es válido y la ruta es /auth/login
 		if (pathname === '/auth/login') {
 			return NextResponse.redirect(new URL('/', request.url));
 		}
 	} catch (error) {
-		// Redirigir a /auth/login si el token no es válido
 		return NextResponse.redirect(new URL('/auth/login', request.url));
 	}
 

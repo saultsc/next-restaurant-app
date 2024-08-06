@@ -14,7 +14,7 @@ import {
 import { useDialogStore } from '@/store';
 import clsx from 'clsx';
 import { useState, useEffect, useRef } from 'react';
-import { IoCloseCircleOutline, IoCloseOutline, IoSaveOutline } from 'react-icons/io5';
+import { IoCloseOutline, IoSaveOutline } from 'react-icons/io5';
 
 type Role = 'admin' | 'user';
 
@@ -33,6 +33,7 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [selectedRole, setSelectedRole] = useState<Role | ''>('');
+	const [isLoading, setIsLoading] = useState(true);
 
 	const isMounted = useRef(false);
 
@@ -58,7 +59,11 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 					}
 				} catch (error) {
 					console.error('Error fetching user:', error);
+				} finally {
+					setIsLoading(false);
 				}
+			} else {
+				setIsLoading(false);
 			}
 		};
 
@@ -71,6 +76,7 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 			setEmail('');
 			setPassword('');
 			setSelectedRole('');
+			setIsLoading(false);
 		}
 	}, [isEditing, isDialogOpen]);
 
@@ -98,7 +104,7 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 	return (
 		<div>
 			{/* Background */}
-			{isDialogOpen && (
+			{isDialogOpen && !isLoading && (
 				<div
 					onClick={closeDialog}
 					className="fixed top-0 left-0 w-screen h-screen z-10 bg-black opacity-30"
@@ -106,7 +112,7 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 			)}
 
 			{/* Blur */}
-			{isDialogOpen && (
+			{isDialogOpen && !isLoading && (
 				<div
 					onClick={closeDialog}
 					className="fade-in fixed top-0 left-0 w-screen h-screen z-10 backdrop-filter backdrop-blur-sm"
@@ -114,14 +120,10 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 			)}
 
 			{/* Dialog */}
-			{
+			{isDialogOpen && !isLoading && (
 				<div
 					className={clsx(
-						'fixed top-1/2 left-1/2 w-[700px] h-[360px] rounded-sm bg-white z-20 shadow-2xl transform transition-all duration-200',
-						{
-							'opacity-0 scale-50': !isDialogOpen,
-							'opacity-100 scale-100 -translate-x-1/2 -translate-y-1/2': isDialogOpen,
-						}
+						'fixed top-1/2 left-1/2 w-[700px] h-[360px] rounded-sm bg-white z-20 shadow-2xl transform -translate-x-1/2 -translate-y-1/2'
 					)}
 				>
 					<header className="flex justify-between w-full h-16 border-b-2 bg-blue-500 rounded-t-sm text-white p-4">
@@ -168,13 +170,6 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 											<SelectItem value="user">Usuario</SelectItem>
 										</SelectContent>
 									</Select>
-									{selectedRole && (
-										<IoCloseCircleOutline
-											size={20}
-											onClick={() => setSelectedRole('')}
-											className="absolute top-1/2 right-8 transform -translate-y-1/2 cursor-pointer"
-										/>
-									)}
 								</div>
 							</section>
 							<footer className="flex justify-end mt-4">
@@ -190,7 +185,7 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 						</div>
 					</form>
 				</div>
-			}
+			)}
 		</div>
 	);
 };

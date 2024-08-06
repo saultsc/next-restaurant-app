@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Pagination, UserModal } from '@/components';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,14 +15,18 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { IoAddOutline, IoSearchOutline, IoTrashOutline, IoPencilOutline } from 'react-icons/io5';
-import { useDialogStore } from '@/store';
+import { useDialogStore, useUserStore } from '@/store';
 import { getAction } from '@/action/user/get-action';
 import { patchAction } from '@/action/user/patch-action'; // Import the patchAction function
 import { User } from '@/interfaces';
 import { ReconfirmModal } from '@/components/reconfirm-modal/ReconfirmModal';
 import { deleteAction } from '@/action/user/delete-action';
+import { useRouter } from 'next/navigation';
 
 export default function Component() {
+	const router = useRouter();
+	const { isAdmin, userId } = useUserStore();
+
 	const openDialog = useDialogStore((store) => store.openDialog);
 	const openDialogDeleteMode = useDialogStore((store) => store.openDialogDeleteMode);
 	const openDialogUpdateMode = useDialogStore((store) => store.openDialogUpdateMode);
@@ -32,38 +36,37 @@ export default function Component() {
 	const [search, setSearch] = useState<string>('');
 	const [totalPages, setTotalPages] = useState(1);
 
-	const fetchData = async () => {
+	const fetchData = useCallback(async () => {
 		const queryParams = { currentPage, rowPerPage, search };
 		const result = await getAction(queryParams);
 
 		setUsers(result.data as any);
 		setTotalPages(result.pagination.totalPages);
-	};
+	}, [currentPage, rowPerPage, search]);
 
 	useEffect(() => {
 		fetchData();
-	}, [currentPage, search]);
+	}, [fetchData]);
 
-	const handleSearch = () => {
+	const handleSearch = useCallback(() => {
 		setCurrentPage(1);
 		fetchData();
-	};
+	}, [fetchData]);
 
-	const addUser = (newUser: User) => {
+	const addUser = useCallback((newUser: User) => {
 		setUsers((prevUsers) => [...prevUsers, { ...newUser, id: prevUsers.length + 1 }]);
-	};
+	}, []);
 
-	const updateUser = async (updatedUser: User) => {
+	const updateUser = useCallback(async (updatedUser: User) => {
 		try {
 			const result = await patchAction(updatedUser as any);
-
 			setUsers((prevUsers: any) =>
 				prevUsers.map((user: any) => (user.id === updatedUser.id ? result : user))
 			);
 		} catch (error) {
 			console.error('Error updating user:', error);
 		}
-	};
+	}, []);
 
 	const deleteUser = async (userId: number) => {
 		try {

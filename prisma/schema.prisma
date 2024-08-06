@@ -19,3 +19,53 @@ enum user_role {
   admin
   user
 }
+
+model categoria {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique
+}
+
+model departamento {
+  id        Int    @id @default(autoincrement())
+  nombre    String @unique
+  provincia String
+}
+
+model medida {
+  id     Int    @id @default(autoincrement())
+  nombre String @unique
+}
+
+model sala {
+  id     Int        @id @default(autoincrement())
+  nombre String     @unique
+  mesas  SalaMesa[]
+}
+
+model mesa {
+  id     Int        @id @default(autoincrement())
+  nombre String     @unique
+  estado Boolean    @default(true)
+  salas  SalaMesa[]
+}
+
+model SalaMesa {
+  salaId Int
+  mesaId Int
+  sala   sala @relation(fields: [salaId], references: [id])
+  mesa   mesa @relation(fields: [mesaId], references: [id])
+
+  @@id([salaId, mesaId])
+}
+
+model cliente {
+  id            Int     @id @default(autoincrement())
+  tipoCliente   String
+  documento     Int
+  rnc           String?
+  nombre        String?
+  telefonno     String?
+  dirrecion     String?
+  email         String?
+  limiteCredito Float
+}

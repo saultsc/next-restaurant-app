@@ -4,7 +4,6 @@ const SECRET_KEY = new TextEncoder().encode('your-secret-key');
 
 interface JwtPayload extends JWTPayload {
 	userId: number;
-	role: boolean;
 	[key: string]: any;
 }
 

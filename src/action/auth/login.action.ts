@@ -28,7 +28,7 @@ export const login = async (credentials: Credentials): Promise<Response> => {
 		});
 
 		if (!user) return { ok: false, message: 'Credenciales Incorrectas', token: '' };
-		const token = await signToken({ userId: user.id, role: user.role === 'admin' });
+		const token = await signToken({ userId: user.id });
 
 		cookies().set('token', token, {
 			expires: new Date(Date.now() + 2 * 60 * 60 * 1000),

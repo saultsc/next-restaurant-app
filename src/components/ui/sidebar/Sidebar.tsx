@@ -12,6 +12,9 @@ import {
 	IoTicketOutline,
 } from 'react-icons/io5';
 
+import { BiCategory } from 'react-icons/bi';
+import { MdOutlineDepartureBoard } from 'react-icons/md';
+
 import { useUiStore } from '@/store';
 import { useUserStore } from '@/store/auth/user.store';
 import { useRouter } from 'next/navigation';
@@ -91,6 +94,22 @@ export const Sidebar = () => {
 				>
 					<IoFastFoodOutline size={20} />
 					<span className="ml-3 text-xl">Productos</span>
+				</Link>
+				<Link
+					href={'/categorias'}
+					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
+				>
+					<BiCategory size={20} />
+					<span className="ml-3 text-xl">Categorias</span>
+				</Link>
+				<Link
+					href={'/departamentos'}
+					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
+				>
+					<MdOutlineDepartureBoard size={20} />
+					<span className="ml-3 text-xl">Departamentos</span>
 				</Link>
 
 				{isUserAdmin && (
