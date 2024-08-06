@@ -1,11 +1,10 @@
 'use client';
 
-import { getUser } from '@/action/user/get.action';
+import { getMesas } from '@/action/mesa/get.action';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
 	Dialog,
-	DialogTrigger,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
@@ -23,23 +22,22 @@ import { useState, useEffect, useRef } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-type Role = 'admin' | 'user';
+type Estado = 'disponible' | 'ocupado' | 'reservado';
 
-type UserModalProps = {
-	addUser: (user: any) => void;
-	updateUser: (user: any) => void;
+type MesaModalProps = {
+	addMesa: (mesa: any) => void;
+	updateMesa: (mesa: any) => void;
 };
 
-export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
+export const MesaModal = ({ addMesa, updateMesa }: MesaModalProps) => {
 	const isDialogOpen = useDialogStore((store) => store.isDialogOpen && !store.isDeleting);
 	const closeDialog = useDialogStore((store) => store.closeDialog);
 	const isEditing = useDialogStore((store) => store.isEditing);
 	const currentItemId = useDialogStore((store) => store.currentItemId);
 
-	const [fullName, setFullName] = useState('');
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [selectedRole, setSelectedRole] = useState<Role | ''>('');
+	const [nombre, setNombre] = useState('');
+	const [estado, setEstado] = useState<Estado | ''>('disponible');
+	const [capacidad, setCapacidad] = useState(0);
 	const [isLoading, setIsLoading] = useState(true);
 
 	const isMounted = useRef(false);
@@ -52,47 +50,43 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 	}, []);
 
 	useEffect(() => {
-		const fetchUser = async () => {
+		const fetchMesa = async () => {
 			if (isEditing && currentItemId) {
 				try {
-					const response = await getUser({ id: currentItemId });
-					const user = response.data[0];
+					const response = await getMesas({ id: currentItemId });
+					const mesa = response.data[0];
 
-					if (user && isMounted.current) {
-						setFullName(user.fullName);
-						setEmail(user.email);
-						setPassword(user.password);
-						setSelectedRole(user.role as Role);
+					if (mesa && isMounted.current) {
+						setNombre(mesa.nombre);
+						setEstado(mesa.estado as Estado);
+						setCapacidad(mesa.capacidad);
 					}
 				} catch (error) {
-					console.log('Error fetching user:', error);
+					console.log('Error fetching mesa:', error);
 				} finally {
 					setIsLoading(false);
 				}
 			} else {
-				// Clear fields when not editing
 				resetFields();
 				setIsLoading(false);
 			}
 		};
 
 		if (isDialogOpen) {
-			fetchUser();
+			fetchMesa();
 		}
 	}, [isEditing, currentItemId, isDialogOpen]);
 
 	const resetFields = () => {
-		setFullName('');
-		setEmail('');
-		setPassword('');
-		setSelectedRole('');
+		setNombre('');
+		setEstado('disponible');
+		setCapacidad(0);
 	};
 
 	const validateFields = () => {
-		if (!fullName) return 'El nombre completo es requerido';
-		if (!email) return 'El correo electrónico es requerido';
-		if (!password) return 'La contraseña es requerida';
-		if (!selectedRole) return 'El rol es requerido';
+		if (!nombre) return 'El nombre es requerido';
+		if (!estado) return 'El estado es requerido';
+		if (capacidad <= 0) return 'La capacidad debe ser mayor a 0';
 		return null;
 	};
 
@@ -103,13 +97,13 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 			return;
 		}
 
-		const user = { id: currentItemId, fullName, email, password, role: selectedRole };
+		const mesa = { id: currentItemId, nombre, estado, capacidad };
 		if (isEditing) {
-			updateUser(user);
-			toast.success('Usuario actualizado con éxito');
+			updateMesa(mesa);
+			toast.success('Mesa actualizada con éxito');
 		} else {
-			addUser(user);
-			toast.success('Usuario creado con éxito');
+			addMesa(mesa);
+			toast.success('Mesa creada con éxito');
 		}
 		closeDialog();
 		setTimeout(() => {
@@ -124,53 +118,54 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 		}, 600);
 	};
 
+	const handleCapacidadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = Number(e.target.value);
+		if (value >= 0) {
+			setCapacidad(value);
+		}
+	};
+
 	return (
 		<>
 			<Dialog open={isDialogOpen} onOpenChange={handleClose}>
 				<DialogContent className="sm:max-w-[600px]">
 					<DialogHeader>
-						<DialogTitle>
-							{isEditing ? 'Editar usuario' : 'Agregar usuario'}
-						</DialogTitle>
+						<DialogTitle>{isEditing ? 'Editar mesa' : 'Agregar mesa'}</DialogTitle>
 						<div className="mt-2">
 							<DialogDescription>
 								{isEditing
-									? 'Edita los detalles del usuario a continuación.'
-									: 'Rellena los detalles para agregar un nuevo usuario.'}
+									? 'Edita los detalles de la mesa a continuación.'
+									: 'Rellena los detalles para agregar una nueva mesa.'}
 							</DialogDescription>
 						</div>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<Input
-							value={fullName}
-							onChange={(e) => setFullName(e.target.value)}
-							placeholder="Nombre completo"
-						/>
-						<Input
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="Correo electrónico"
-						/>
-						<Input
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							placeholder="Contraseña"
+							value={nombre}
+							onChange={(e) => setNombre(e.target.value)}
+							placeholder="Nombre"
 						/>
 						<Select
-							value={selectedRole}
-							onValueChange={(value: Role | '') => setSelectedRole(value)}
+							value={estado}
+							onValueChange={(value: Estado | '') => setEstado(value)}
 						>
 							<SelectTrigger>
-								<SelectValue placeholder="Seleccionar rol" />
+								<SelectValue placeholder="Seleccionar estado" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="admin">Administrador</SelectItem>
-								<SelectItem value="user">Usuario</SelectItem>
+								<SelectItem value="disponible">Disponible</SelectItem>
+								<SelectItem value="ocupado">Ocupado</SelectItem>
+								<SelectItem value="reservado">Reservado</SelectItem>
 							</SelectContent>
 						</Select>
+						<Input
+							type="number"
+							value={capacidad}
+							onChange={handleCapacidadChange}
+							placeholder="Capacidad"
+						/>
 						<Button onClick={handleSave} className="w-full">
-							{isEditing ? 'Guardar los cambios' : 'Agregar usuario'}
+							{isEditing ? 'Guardar los cambios' : 'Agregar mesa'}
 						</Button>
 					</div>
 				</DialogContent>

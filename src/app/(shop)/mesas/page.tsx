@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Pagination, UserModal } from '@/components';
+import { Pagination } from '@/components';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -13,19 +13,19 @@ import {
 	TableBody,
 	TableCell,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { IoAddOutline, IoSearchOutline, IoTrashOutline, IoPencilOutline } from 'react-icons/io5';
 import { useDialogStore } from '@/store';
-import { User } from '@/interfaces';
+import { Mesa } from '@/interfaces';
 import { ReconfirmModal } from '@/components/reconfirm-modal/ReconfirmModal';
-import { deleteUser, getUser, patchUser, postUser } from '@/action';
+import { deleteMesa, getMesas, patchMesa, postMesa } from '@/action';
 import clsx from 'clsx';
+import { MesaModal } from '@/components/mesa/mesa-modal/MesaModal';
 
-export default function Component() {
+export default function MesaPage() {
 	const openDialog = useDialogStore((store) => store.openDialog);
 	const openDialogDeleteMode = useDialogStore((store) => store.openDialogDeleteMode);
 	const openDialogUpdateMode = useDialogStore((store) => store.openDialogUpdateMode);
-	const [users, setUsers] = useState<User[]>([]);
+	const [mesas, setMesas] = useState<Mesa[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [rowPerPage] = useState(10);
 	const [search, setSearch] = useState<string>('');
@@ -33,9 +33,9 @@ export default function Component() {
 
 	const fetchData = useCallback(async () => {
 		const queryParams = { currentPage, rowPerPage, search };
-		const result = await getUser(queryParams);
+		const result = await getMesas(queryParams);
 
-		setUsers(result.data as any);
+		setMesas(result.data as any);
 		setTotalPages(result.pagination.totalPages);
 	}, [currentPage, rowPerPage, search]);
 
@@ -48,37 +48,40 @@ export default function Component() {
 		fetchData();
 	}, [fetchData]);
 
-	const addUser = useCallback(async (newUser: User) => {
+	const addMesa = useCallback(async (newMesa: Mesa) => {
 		try {
-			const createdUser = await postUser(newUser as any);
-			setUsers((prevUsers) => [...prevUsers, { ...createdUser, id: prevUsers.length + 1 }]);
+			const createdMesa = await postMesa(newMesa as any);
+			setMesas((prevMesas) => [
+				...(prevMesas as any),
+				{ ...createdMesa, id: prevMesas.length + 1 },
+			]);
 		} catch (error) {
-			console.log('Error adding user:', error);
+			console.log('Error adding mesa:', error);
 		}
 	}, []);
 
-	const updateUser = useCallback(async (updatedUser: User) => {
+	const updateMesa = useCallback(async (updatedMesa: Mesa) => {
 		try {
-			const result = await patchUser(updatedUser as any);
-			setUsers((prevUsers: any) =>
-				prevUsers.map((user: any) => (user.id === updatedUser.id ? result : user))
+			const result = await patchMesa(updatedMesa as any);
+			setMesas((prevMesas: any) =>
+				prevMesas.map((mesa: any) => (mesa.id === updatedMesa.id ? result : mesa))
 			);
 		} catch (error) {
-			console.log('Error updating user:', error);
+			console.log('Error updating mesa:', error);
 		}
 	}, []);
 
-	const deleteUserById = async (userId: number) => {
+	const deleteMesaById = async (mesaId: number) => {
 		try {
-			await deleteUser(userId);
-			setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+			await deleteMesa(mesaId);
+			setMesas((prevMesas) => prevMesas.filter((mesa) => mesa.id !== mesaId));
 		} catch (error) {
-			console.log('Error deleting user:', error);
+			console.log('Error deleting mesa:', error);
 		}
 	};
 
-	const handleDeleteClick = (userId: number) => {
-		openDialogDeleteMode('Confirmar Eliminación', userId);
+	const handleDeleteClick = (mesaId: number) => {
+		openDialogDeleteMode('Confirmar Eliminación', mesaId);
 	};
 
 	return (
@@ -87,7 +90,7 @@ export default function Component() {
 				<div className="flex space-x-4">
 					<Input
 						type="search"
-						placeholder="Usuario"
+						placeholder="Mesa"
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 					/>
@@ -114,39 +117,33 @@ export default function Component() {
 
 			<Card>
 				<CardHeader className="bg-black/90 rounded-t-md text-white">
-					<CardTitle>Usuarios</CardTitle>
+					<CardTitle>Mesas</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<div
 						className={clsx('h-[560px] overflow-y-auto flex justify-center', {
-							'items-start': users.length > 0,
-							'items-center': users.length === 0,
+							'items-start': mesas.length > 0,
+							'items-center': mesas.length === 0,
 						})}
 					>
-						{users.length > 0 ? (
+						{mesas.length > 0 ? (
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead>Codigo</TableHead>
+										<TableHead>ID</TableHead>
 										<TableHead>Nombre</TableHead>
-										<TableHead>Correo</TableHead>
-										<TableHead>Role</TableHead>
+										<TableHead>Estado</TableHead>
+										<TableHead>Capacidad</TableHead>
 										<TableHead>Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{users.map((user: any) => (
-										<TableRow key={user.id}>
-											<TableCell>{user.id}</TableCell>
-											<TableCell>{user.fullName}</TableCell>
-											<TableCell>{user.email}</TableCell>
-											<TableCell>
-												<Badge className="bg-blue-500">
-													{user.role === 'admin'
-														? 'Administrador'
-														: 'Usuario'}
-												</Badge>
-											</TableCell>
+									{mesas.map((mesa: any) => (
+										<TableRow key={mesa.id}>
+											<TableCell>{mesa.id}</TableCell>
+											<TableCell>{mesa.nombre}</TableCell>
+											<TableCell>{mesa.estado}</TableCell>
+											<TableCell>{mesa.capacidad}</TableCell>
 											<TableCell>
 												<Button
 													variant="default"
@@ -154,7 +151,7 @@ export default function Component() {
 													onClick={() =>
 														openDialogUpdateMode(
 															'Actualizando',
-															user.id
+															mesa.id
 														)
 													}
 												>
@@ -163,7 +160,7 @@ export default function Component() {
 												<Button
 													variant="default"
 													className="bg-red-500 hover:bg-red-600 text-white"
-													onClick={() => handleDeleteClick(user.id)}
+													onClick={() => handleDeleteClick(mesa.id)}
 												>
 													<IoTrashOutline size={16} />
 												</Button>
@@ -176,7 +173,7 @@ export default function Component() {
 							<p className="text-2xl font-bold">No hay datos</p>
 						)}
 					</div>
-					{users.length > 0 && (
+					{mesas.length > 0 && (
 						<div>
 							<Pagination
 								currentPage={currentPage}
@@ -188,8 +185,8 @@ export default function Component() {
 				</CardContent>
 			</Card>
 
-			<UserModal addUser={addUser} updateUser={updateUser} />
-			<ReconfirmModal deleteEntity={deleteUserById} entityName="Usuario" />
+			<MesaModal addMesa={addMesa} updateMesa={updateMesa} />
+			<ReconfirmModal deleteEntity={deleteMesaById} entityName="Mesa" />
 		</div>
 	);
 }

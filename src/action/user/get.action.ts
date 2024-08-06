@@ -1,17 +1,11 @@
 'use server';
 
+import { QueryParams } from '@/interfaces';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-interface QueryParams {
-	id?: string | number;
-	currentPage?: number;
-	rowPerPage?: number;
-	search?: string;
-}
-
-export const getAction = async (queryParams: QueryParams) => {
+export const getUser = async (queryParams: QueryParams) => {
 	const { id, currentPage = 1, rowPerPage = 10, search } = queryParams;
 
 	try {

@@ -8,6 +8,7 @@ import {
 	IoFastFoodOutline,
 	IoLogOutOutline,
 	IoPeopleOutline,
+	IoPersonOutline,
 	IoSearchOutline,
 	IoTicketOutline,
 } from 'react-icons/io5';
@@ -110,6 +111,30 @@ export const Sidebar = () => {
 				>
 					<MdOutlineDepartureBoard size={20} />
 					<span className="ml-3 text-xl">Departamentos</span>
+				</Link>
+				<Link
+					href={'/clientes'}
+					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
+				>
+					<IoPersonOutline size={20} />
+					<span className="ml-3 text-xl">Clientes</span>
+				</Link>
+				<Link
+					href={'/mesas'}
+					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
+				>
+					<IoPersonOutline size={20} />
+					<span className="ml-3 text-xl">Mesas</span>
+				</Link>
+				<Link
+					href={'/salas'}
+					className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
+					onClick={() => closeMenu()}
+				>
+					<IoPersonOutline size={20} />
+					<span className="ml-3 text-xl">Salas</span>
 				</Link>
 
 				{isUserAdmin && (

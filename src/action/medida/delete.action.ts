@@ -4,14 +4,14 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const deleteAction = async (id: string | number) => {
+export const deleteMedida = async (id: string | number) => {
 	try {
-		const deletedUser = await prisma.user.delete({
+		const deletedMedida = await prisma.medida.delete({
 			where: { id: Number(id) },
 		});
-		return deletedUser;
+		return deletedMedida;
 	} catch (error) {
-		console.error('Error deleting user:', error);
+		console.log('Error deleting media:', error);
 		throw error;
 	} finally {
 		await prisma.$disconnect();

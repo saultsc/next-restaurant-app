@@ -15,11 +15,6 @@ model user {
   role     user_role @default(user)
 }
 
-enum user_role {
-  admin
-  user
-}
-
 model categoria {
   id     Int    @id @default(autoincrement())
   nombre String @unique
@@ -37,25 +32,17 @@ model medida {
 }
 
 model sala {
-  id     Int        @id @default(autoincrement())
-  nombre String     @unique
-  mesas  SalaMesa[]
+  id       Int        @id @default(autoincrement())
+  nombre   String     @unique
+  salamesa salamesa[]
 }
 
 model mesa {
-  id     Int        @id @default(autoincrement())
-  nombre String     @unique
-  estado Boolean    @default(true)
-  salas  SalaMesa[]
-}
-
-model SalaMesa {
-  salaId Int
-  mesaId Int
-  sala   sala @relation(fields: [salaId], references: [id])
-  mesa   mesa @relation(fields: [mesaId], references: [id])
-
-  @@id([salaId, mesaId])
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique
+  estado    estado     @default(disponible)
+  capacidad Int
+  salamesa  salamesa[]
 }
 
 model cliente {
@@ -64,8 +51,29 @@ model cliente {
   documento     Int
   rnc           String?
   nombre        String?
-  telefonno     String?
   dirrecion     String?
   email         String?
   limiteCredito Float
+  telefonno     String?
+}
+
+model salamesa {
+  salaId Int
+  mesaId Int
+  mesa   mesa @relation(fields: [mesaId], references: [id], map: "SalaMesa_mesaId_fkey")
+  sala   sala @relation(fields: [salaId], references: [id], map: "SalaMesa_salaId_fkey")
+
+  @@id([salaId, mesaId])
+  @@index([mesaId], map: "SalaMesa_mesaId_fkey")
+}
+
+enum user_role {
+  admin
+  user
+}
+
+enum estado {
+  reservada
+  ocupada
+  disponible
 }

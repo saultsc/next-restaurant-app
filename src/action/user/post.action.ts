@@ -11,7 +11,7 @@ interface PostUser {
 	role: 'admin' | 'user';
 }
 
-export const postAction = async ({ fullName, email, password, role }: PostUser) => {
+export const postUser = async ({ fullName, email, password, role }: PostUser) => {
 	try {
 		const newUser = await prisma.user.create({
 			data: {
@@ -23,7 +23,7 @@ export const postAction = async ({ fullName, email, password, role }: PostUser) 
 		});
 		return newUser;
 	} catch (error) {
-		console.error('Error creating user:', error);
+		console.log('Error creating user:', error);
 		throw error;
 	} finally {
 		await prisma.$disconnect();

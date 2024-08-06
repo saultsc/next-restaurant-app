@@ -1,6 +1,6 @@
 import { Credentials, login } from '@/action';
 import { logout } from '@/action/auth/logout.action';
-import { getAction } from '@/action/user/get-action';
+import { getUser } from '@/action/user/get.action';
 import { verifyToken } from '@/lib/jwt';
 import { create } from 'zustand';
 
@@ -31,7 +31,7 @@ export const useUserStore = create<UserStore>((set) => ({
 			const data = await verifyToken(response.token);
 			if (!data) return { ok: false, message: 'Token no válido' };
 
-			const user = await getAction({ id: data.userId });
+			const user = await getUser({ id: data.userId });
 			set({ userId: user.data[0].id, isAdmin: user.data[0].role === 'admin' });
 			return {
 				ok: true,
@@ -59,7 +59,7 @@ export const useUserStore = create<UserStore>((set) => ({
 			return;
 		}
 
-		const user = await getAction({ id: data.userId });
+		const user = await getUser({ id: data.userId });
 		set({ userId: user.data[0].id, isAdmin: user.data[0].role === 'admin' });
 	},
 	initialize: () => {

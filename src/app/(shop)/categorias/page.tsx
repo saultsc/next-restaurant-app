@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Pagination, UserModal } from '@/components';
+import { Pagination } from '@/components';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -13,19 +13,19 @@ import {
 	TableBody,
 	TableCell,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { IoAddOutline, IoSearchOutline, IoTrashOutline, IoPencilOutline } from 'react-icons/io5';
 import { useDialogStore } from '@/store';
-import { User } from '@/interfaces';
+import { Categoria } from '@/interfaces';
 import { ReconfirmModal } from '@/components/reconfirm-modal/ReconfirmModal';
-import { deleteUser, getUser, patchUser, postUser } from '@/action';
+import { deleteCategoria, getCategorias, patchCategoria, postCategoria } from '@/action';
 import clsx from 'clsx';
+import { CategoriaModal } from '@/components/categorias/categorias-modal/CategoriasModal';
 
-export default function Component() {
+export default function CategoriaPage() {
 	const openDialog = useDialogStore((store) => store.openDialog);
 	const openDialogDeleteMode = useDialogStore((store) => store.openDialogDeleteMode);
 	const openDialogUpdateMode = useDialogStore((store) => store.openDialogUpdateMode);
-	const [users, setUsers] = useState<User[]>([]);
+	const [categorias, setCategorias] = useState<Categoria[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [rowPerPage] = useState(10);
 	const [search, setSearch] = useState<string>('');
@@ -33,9 +33,9 @@ export default function Component() {
 
 	const fetchData = useCallback(async () => {
 		const queryParams = { currentPage, rowPerPage, search };
-		const result = await getUser(queryParams);
+		const result = await getCategorias(queryParams);
 
-		setUsers(result.data as any);
+		setCategorias(result.data as any);
 		setTotalPages(result.pagination.totalPages);
 	}, [currentPage, rowPerPage, search]);
 
@@ -48,37 +48,46 @@ export default function Component() {
 		fetchData();
 	}, [fetchData]);
 
-	const addUser = useCallback(async (newUser: User) => {
+	const addCategoria = useCallback(async (newCategoria: Categoria) => {
 		try {
-			const createdUser = await postUser(newUser as any);
-			setUsers((prevUsers) => [...prevUsers, { ...createdUser, id: prevUsers.length + 1 }]);
+			console.log(newCategoria);
+			const createdCategoria = await postCategoria(newCategoria as any);
+			console.log(createdCategoria);
+			setCategorias((prevCategorias) => [
+				...(prevCategorias as any),
+				{ ...createdCategoria, id: prevCategorias.length + 1 },
+			]);
 		} catch (error) {
-			console.log('Error adding user:', error);
+			console.log('Error adding categoria:', error);
 		}
 	}, []);
 
-	const updateUser = useCallback(async (updatedUser: User) => {
+	const updateCategoria = useCallback(async (updatedCategoria: Categoria) => {
 		try {
-			const result = await patchUser(updatedUser as any);
-			setUsers((prevUsers: any) =>
-				prevUsers.map((user: any) => (user.id === updatedUser.id ? result : user))
+			const result = await patchCategoria(updatedCategoria as any);
+			setCategorias((prevCategorias: any) =>
+				prevCategorias.map((categoria: any) =>
+					categoria.id === updatedCategoria.id ? result : categoria
+				)
 			);
 		} catch (error) {
-			console.log('Error updating user:', error);
+			console.log('Error updating categoria:', error);
 		}
 	}, []);
 
-	const deleteUserById = async (userId: number) => {
+	const deleteCategoriaById = async (categoriaId: number) => {
 		try {
-			await deleteUser(userId);
-			setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+			await deleteCategoria(categoriaId);
+			setCategorias((prevCategorias) =>
+				prevCategorias.filter((categoria) => categoria.id !== categoriaId)
+			);
 		} catch (error) {
-			console.log('Error deleting user:', error);
+			console.log('Error deleting categoria:', error);
 		}
 	};
 
-	const handleDeleteClick = (userId: number) => {
-		openDialogDeleteMode('Confirmar Eliminación', userId);
+	const handleDeleteClick = (categoriaId: number) => {
+		openDialogDeleteMode('Confirmar Eliminación', categoriaId);
 	};
 
 	return (
@@ -87,7 +96,7 @@ export default function Component() {
 				<div className="flex space-x-4">
 					<Input
 						type="search"
-						placeholder="Usuario"
+						placeholder="Categoría"
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 					/>
@@ -114,39 +123,29 @@ export default function Component() {
 
 			<Card>
 				<CardHeader className="bg-black/90 rounded-t-md text-white">
-					<CardTitle>Usuarios</CardTitle>
+					<CardTitle>Categorías</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<div
 						className={clsx('h-[560px] overflow-y-auto flex justify-center', {
-							'items-start': users.length > 0,
-							'items-center': users.length === 0,
+							'items-start': categorias.length > 0,
+							'items-center': categorias.length === 0,
 						})}
 					>
-						{users.length > 0 ? (
+						{categorias.length > 0 ? (
 							<Table>
 								<TableHeader>
 									<TableRow>
 										<TableHead>Codigo</TableHead>
 										<TableHead>Nombre</TableHead>
-										<TableHead>Correo</TableHead>
-										<TableHead>Role</TableHead>
 										<TableHead>Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{users.map((user: any) => (
-										<TableRow key={user.id}>
-											<TableCell>{user.id}</TableCell>
-											<TableCell>{user.fullName}</TableCell>
-											<TableCell>{user.email}</TableCell>
-											<TableCell>
-												<Badge className="bg-blue-500">
-													{user.role === 'admin'
-														? 'Administrador'
-														: 'Usuario'}
-												</Badge>
-											</TableCell>
+									{categorias.map((categoria: any) => (
+										<TableRow key={categoria.id}>
+											<TableCell>{categoria.id}</TableCell>
+											<TableCell>{categoria.nombre}</TableCell>
 											<TableCell>
 												<Button
 													variant="default"
@@ -154,7 +153,7 @@ export default function Component() {
 													onClick={() =>
 														openDialogUpdateMode(
 															'Actualizando',
-															user.id
+															categoria.id
 														)
 													}
 												>
@@ -163,7 +162,7 @@ export default function Component() {
 												<Button
 													variant="default"
 													className="bg-red-500 hover:bg-red-600 text-white"
-													onClick={() => handleDeleteClick(user.id)}
+													onClick={() => handleDeleteClick(categoria.id)}
 												>
 													<IoTrashOutline size={16} />
 												</Button>
@@ -176,7 +175,7 @@ export default function Component() {
 							<p className="text-2xl font-bold">No hay datos</p>
 						)}
 					</div>
-					{users.length > 0 && (
+					{categorias.length > 0 && (
 						<div>
 							<Pagination
 								currentPage={currentPage}
@@ -188,8 +187,8 @@ export default function Component() {
 				</CardContent>
 			</Card>
 
-			<UserModal addUser={addUser} updateUser={updateUser} />
-			<ReconfirmModal deleteEntity={deleteUserById} entityName="Usuario" />
+			<CategoriaModal addCategoria={addCategoria} updateCategoria={updateCategoria} />
+			<ReconfirmModal deleteEntity={deleteCategoriaById} entityName="Categoría" />
 		</div>
 	);
 }

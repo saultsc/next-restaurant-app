@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Pagination, UserModal } from '@/components';
+import { Pagination } from '@/components';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -13,19 +13,19 @@ import {
 	TableBody,
 	TableCell,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { IoAddOutline, IoSearchOutline, IoTrashOutline, IoPencilOutline } from 'react-icons/io5';
 import { useDialogStore } from '@/store';
-import { User } from '@/interfaces';
+import { Cliente } from '@/interfaces';
 import { ReconfirmModal } from '@/components/reconfirm-modal/ReconfirmModal';
-import { deleteUser, getUser, patchUser, postUser } from '@/action';
+import { deleteCliente, getCliente, patchCliente, postCliente } from '@/action';
 import clsx from 'clsx';
+import { ClientModal } from '@/components/clientes/clientes-model/ClientesModal';
 
-export default function Component() {
+export default function ClientePage() {
 	const openDialog = useDialogStore((store) => store.openDialog);
 	const openDialogDeleteMode = useDialogStore((store) => store.openDialogDeleteMode);
 	const openDialogUpdateMode = useDialogStore((store) => store.openDialogUpdateMode);
-	const [users, setUsers] = useState<User[]>([]);
+	const [clientes, setClientes] = useState<Cliente[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [rowPerPage] = useState(10);
 	const [search, setSearch] = useState<string>('');
@@ -33,9 +33,9 @@ export default function Component() {
 
 	const fetchData = useCallback(async () => {
 		const queryParams = { currentPage, rowPerPage, search };
-		const result = await getUser(queryParams);
+		const result = await getCliente(queryParams);
 
-		setUsers(result.data as any);
+		setClientes(result.data as any);
 		setTotalPages(result.pagination.totalPages);
 	}, [currentPage, rowPerPage, search]);
 
@@ -48,37 +48,46 @@ export default function Component() {
 		fetchData();
 	}, [fetchData]);
 
-	const addUser = useCallback(async (newUser: User) => {
+	const addCliente = useCallback(async (newCliente: Cliente) => {
 		try {
-			const createdUser = await postUser(newUser as any);
-			setUsers((prevUsers) => [...prevUsers, { ...createdUser, id: prevUsers.length + 1 }]);
+			console.log(newCliente);
+			const createdCliente = await postCliente(newCliente as any);
+			console.log(createdCliente);
+			setClientes((prevClientes) => [
+				...(prevClientes as any),
+				{ ...createdCliente, id: prevClientes.length + 1 },
+			]);
 		} catch (error) {
-			console.log('Error adding user:', error);
+			console.log('Error adding cliente:', error);
 		}
 	}, []);
 
-	const updateUser = useCallback(async (updatedUser: User) => {
+	const updateCliente = useCallback(async (updatedCliente: Cliente) => {
 		try {
-			const result = await patchUser(updatedUser as any);
-			setUsers((prevUsers: any) =>
-				prevUsers.map((user: any) => (user.id === updatedUser.id ? result : user))
+			const result = await patchCliente(updatedCliente as any);
+			setClientes((prevClientes: any) =>
+				prevClientes.map((cliente: any) =>
+					cliente.id === updatedCliente.id ? result : cliente
+				)
 			);
 		} catch (error) {
-			console.log('Error updating user:', error);
+			console.log('Error updating cliente:', error);
 		}
 	}, []);
 
-	const deleteUserById = async (userId: number) => {
+	const deleteClienteById = async (clienteId: number) => {
 		try {
-			await deleteUser(userId);
-			setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+			await deleteCliente(clienteId);
+			setClientes((prevClientes) =>
+				prevClientes.filter((cliente) => cliente.id !== clienteId)
+			);
 		} catch (error) {
-			console.log('Error deleting user:', error);
+			console.log('Error deleting cliente:', error);
 		}
 	};
 
-	const handleDeleteClick = (userId: number) => {
-		openDialogDeleteMode('Confirmar Eliminación', userId);
+	const handleDeleteClick = (clienteId: number) => {
+		openDialogDeleteMode('Confirmar Eliminación', clienteId);
 	};
 
 	return (
@@ -87,7 +96,7 @@ export default function Component() {
 				<div className="flex space-x-4">
 					<Input
 						type="search"
-						placeholder="Usuario"
+						placeholder="Cliente"
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 					/>
@@ -114,39 +123,35 @@ export default function Component() {
 
 			<Card>
 				<CardHeader className="bg-black/90 rounded-t-md text-white">
-					<CardTitle>Usuarios</CardTitle>
+					<CardTitle>Clientes</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<div
 						className={clsx('h-[560px] overflow-y-auto flex justify-center', {
-							'items-start': users.length > 0,
-							'items-center': users.length === 0,
+							'items-start': clientes.length > 0,
+							'items-center': clientes.length === 0,
 						})}
 					>
-						{users.length > 0 ? (
+						{clientes.length > 0 ? (
 							<Table>
 								<TableHeader>
 									<TableRow>
 										<TableHead>Codigo</TableHead>
+										<TableHead>Tipo Cliente</TableHead>
+										<TableHead>Documento</TableHead>
 										<TableHead>Nombre</TableHead>
 										<TableHead>Correo</TableHead>
-										<TableHead>Role</TableHead>
 										<TableHead>Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{users.map((user: any) => (
-										<TableRow key={user.id}>
-											<TableCell>{user.id}</TableCell>
-											<TableCell>{user.fullName}</TableCell>
-											<TableCell>{user.email}</TableCell>
-											<TableCell>
-												<Badge className="bg-blue-500">
-													{user.role === 'admin'
-														? 'Administrador'
-														: 'Usuario'}
-												</Badge>
-											</TableCell>
+									{clientes.map((cliente: any) => (
+										<TableRow key={cliente.id}>
+											<TableCell>{cliente.id}</TableCell>
+											<TableCell>{cliente.tipoCliente}</TableCell>
+											<TableCell>{cliente.documento}</TableCell>
+											<TableCell>{cliente.nombre}</TableCell>
+											<TableCell>{cliente.email}</TableCell>
 											<TableCell>
 												<Button
 													variant="default"
@@ -154,7 +159,7 @@ export default function Component() {
 													onClick={() =>
 														openDialogUpdateMode(
 															'Actualizando',
-															user.id
+															cliente.id
 														)
 													}
 												>
@@ -163,7 +168,7 @@ export default function Component() {
 												<Button
 													variant="default"
 													className="bg-red-500 hover:bg-red-600 text-white"
-													onClick={() => handleDeleteClick(user.id)}
+													onClick={() => handleDeleteClick(cliente.id)}
 												>
 													<IoTrashOutline size={16} />
 												</Button>
@@ -176,7 +181,7 @@ export default function Component() {
 							<p className="text-2xl font-bold">No hay datos</p>
 						)}
 					</div>
-					{users.length > 0 && (
+					{clientes.length > 0 && (
 						<div>
 							<Pagination
 								currentPage={currentPage}
@@ -188,8 +193,8 @@ export default function Component() {
 				</CardContent>
 			</Card>
 
-			<UserModal addUser={addUser} updateUser={updateUser} />
-			<ReconfirmModal deleteEntity={deleteUserById} entityName="Usuario" />
+			<ClientModal addClient={addCliente} updateClient={updateCliente} />
+			<ReconfirmModal deleteEntity={deleteClienteById} entityName="Cliente" />
 		</div>
 	);
 }

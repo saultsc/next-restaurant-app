@@ -12,7 +12,7 @@ interface PatchUser {
 	role?: 'admin' | 'user';
 }
 
-export const patchAction = async ({ id, fullName, email, password, role }: PatchUser) => {
+export const patchUser = async ({ id, fullName, email, password, role }: PatchUser) => {
 	try {
 		const updatedUser = await prisma.user.update({
 			where: { id: Number(id) },
@@ -25,7 +25,7 @@ export const patchAction = async ({ id, fullName, email, password, role }: Patch
 		});
 		return updatedUser;
 	} catch (error) {
-		console.error('Error updating user:', error);
+		console.log('Error updating user:', error);
 		throw error;
 	} finally {
 		await prisma.$disconnect();
