@@ -31,17 +31,15 @@ export const LoginForm = () => {
 
 		const response = await login({ email, password, rememberMe });
 		if (!response.ok) {
-			setTimeout(() => {
-				setIsSubmitting(false);
-				toast({
-					variant: 'destructive',
-					description:
-						response.message === 'Credenciales Incorrectas'
-							? 'Credenciales Incorrectas'
-							: 'Mantenimiento del servidor',
-					duration: 1000,
-				});
-			}, 500);
+			setIsSubmitting(false);
+			toast({
+				variant: 'destructive',
+				description:
+					response.message === 'Credenciales Incorrectas'
+						? 'Credenciales Incorrectas'
+						: 'Mantenimiento del servidor',
+				duration: 1000,
+			});
 
 			return;
 		}
@@ -50,9 +48,7 @@ export const LoginForm = () => {
 			? (localStorage.setItem('email', email), localStorage.setItem('rememberMe', 'true'))
 			: (localStorage.removeItem('email'), localStorage.removeItem('rememberMe'));
 
-		setTimeout(() => {
-			router.push('');
-		}, 500);
+		router.push('');
 	};
 
 	return (
