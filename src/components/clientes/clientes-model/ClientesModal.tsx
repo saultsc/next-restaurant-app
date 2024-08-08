@@ -27,14 +27,15 @@ export const ClientModal = ({ addClient, updateClient }: ClientModalProps) => {
 	const currentItemId = useDialogStore((store) => store.currentItemId);
 
 	const [tipoCliente, setTipoCliente] = useState('');
-	const [documento, setDocumento] = useState<Number | null>();
+	const [documento, setDocumento] = useState<number | null>(null);
 	const [rnc, setRnc] = useState('');
 	const [nombre, setNombre] = useState('');
-	const [telefonno, settelefonno] = useState('');
+	const [telefonno, setTelefonno] = useState('');
 	const [dirrecion, setDirrecion] = useState('');
 	const [email, setEmail] = useState('');
-	const [limiteCredito, setLimiteCredito] = useState<Number | null>();
+	const [limiteCredito, setLimiteCredito] = useState<number | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
 	const isMounted = useRef(false);
 
@@ -57,7 +58,7 @@ export const ClientModal = ({ addClient, updateClient }: ClientModalProps) => {
 						setDocumento(+client.documento);
 						setRnc(client.rnc ?? '');
 						setNombre(client.nombre ?? '');
-						settelefonno(client.telefonno ?? '');
+						setTelefonno(client.telefonno ?? '');
 						setDirrecion(client.dirrecion ?? '');
 						setEmail(client.email ?? '');
 						setLimiteCredito(+client.limiteCredito);
@@ -80,28 +81,30 @@ export const ClientModal = ({ addClient, updateClient }: ClientModalProps) => {
 		setDocumento(null);
 		setRnc('');
 		setNombre('');
-		settelefonno('');
+		setTelefonno('');
 		setDirrecion('');
 		setEmail('');
 		setLimiteCredito(null);
+		setErrors({});
 	};
 
 	const validateFields = () => {
-		if (!tipoCliente) return 'El tipo de cliente es requerido';
-		if (!documento) return 'El documento es requerido';
-		if (!rnc) return 'El RNC es requerido';
-		if (!nombre) return 'El nombre es requerido';
-		if (!telefonno) return 'El teléfono es requerido';
-		if (!dirrecion) return 'La dirección es requerida';
-		if (!email) return 'El correo electrónico es requerido';
-		if (!limiteCredito) return 'El límite de crédito es requerido';
-		return null;
+		const newErrors: { [key: string]: string } = {};
+		if (!tipoCliente) newErrors.tipoCliente = 'El tipo de cliente es requerido';
+		if (!documento) newErrors.documento = 'El documento es requerido';
+		if (!limiteCredito) newErrors.limiteCredito = 'El límite de crédito es requerido';
+		setErrors(newErrors);
+
+		// Clear errors after 3 seconds
+		setTimeout(() => {
+			setErrors({});
+		}, 3000);
+
+		return Object.keys(newErrors).length === 0;
 	};
 
 	const handleSave = () => {
-		const validationError = validateFields();
-		if (validationError) {
-			toast.error(validationError);
+		if (!validateFields()) {
 			return;
 		}
 
@@ -144,60 +147,85 @@ export const ClientModal = ({ addClient, updateClient }: ClientModalProps) => {
 						<DialogTitle>
 							{isEditing ? 'Editar cliente' : 'Agregar cliente'}
 						</DialogTitle>
-						<div className="mt-2">
-							<DialogDescription>
-								{isEditing
-									? 'Edita los detalles del cliente a continuación.'
-									: 'Rellena los detalles para agregar un nuevo cliente.'}
-							</DialogDescription>
-						</div>
+						<DialogDescription>
+							{isEditing
+								? 'Edita los detalles del cliente a continuación.'
+								: 'Rellena los detalles para agregar un nuevo cliente.'}
+						</DialogDescription>
 					</DialogHeader>
-					<div className="grid gap-4 py-4">
-						<select
-							value={tipoCliente}
-							onChange={(e) => setTipoCliente(e.target.value)}
-							className="border rounded p-2"
-						>
-							<option value="">Selecciona el tipo de cliente</option>
-							<option value="Empresa">Empresa</option>
-							<option value="Otra cosa">Otra cosa</option>
-						</select>
-						<Input
-							value={documento ? documento.toString() : ''}
-							onChange={(e) => setDocumento(Number(e.target.value))}
-							placeholder="Documento"
-						/>
-						<Input
-							value={rnc}
-							onChange={(e) => setRnc(e.target.value)}
-							placeholder="RNC"
-						/>
-						<Input
-							value={nombre}
-							onChange={(e) => setNombre(e.target.value)}
-							placeholder="Nombre"
-						/>
-						<Input
-							value={telefonno}
-							onChange={(e) => settelefonno(e.target.value)}
-							placeholder="Teléfono"
-						/>
-						<Input
-							value={dirrecion}
-							onChange={(e) => setDirrecion(e.target.value)}
-							placeholder="Dirección"
-						/>
-						<Input
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="Correo electrónico"
-						/>
-						<Input
-							value={limiteCredito?.toString()}
-							onChange={(e) => setLimiteCredito(Number(e.target.value))}
-							placeholder="Límite de crédito"
-						/>
-						<Button onClick={handleSave} className="w-full">
+					<div className="grid grid-cols-1 gap-4 p-4">
+						<h2 className="text-lg font-semibold">Datos del cliente</h2>
+						<div className="grid grid-cols-2 gap-4">
+							<div>
+								<select
+									value={tipoCliente}
+									onChange={(e) => setTipoCliente(e.target.value)}
+									className="border rounded p-2 w-full"
+								>
+									<option value="">Tipo de cliente</option>
+									<option value="Empresa">Empresa</option>
+									<option value="Otra cosa">Otra cosa</option>
+								</select>
+								<div className="h-6">
+									{errors.tipoCliente && (
+										<p className="text-red-500">{errors.tipoCliente}</p>
+									)}
+								</div>
+							</div>
+							<div>
+								<Input
+									value={documento ? documento.toString() : ''}
+									onChange={(e) => setDocumento(Number(e.target.value))}
+									placeholder="Documento"
+								/>
+								<div className="h-6">
+									{errors.documento && (
+										<p className="text-red-500">{errors.documento}</p>
+									)}
+								</div>
+							</div>
+							<Input
+								value={nombre}
+								onChange={(e) => setNombre(e.target.value)}
+								placeholder="Nombre"
+							/>
+							<Input
+								value={telefonno}
+								onChange={(e) => setTelefonno(e.target.value)}
+								placeholder="Teléfono"
+							/>
+							<Input
+								value={dirrecion}
+								onChange={(e) => setDirrecion(e.target.value)}
+								placeholder="Dirección"
+							/>
+							<Input
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								placeholder="Correo electrónico"
+							/>
+						</div>
+						<h2 className="text-lg font-semibold">Datos generales</h2>
+						<div className="grid grid-cols-2 gap-4">
+							<Input
+								value={rnc}
+								onChange={(e) => setRnc(e.target.value)}
+								placeholder="RNC"
+							/>
+							<div>
+								<Input
+									value={limiteCredito ? limiteCredito.toString() : ''}
+									onChange={(e) => setLimiteCredito(Number(e.target.value))}
+									placeholder="Límite de crédito"
+								/>
+								<div className="h-6">
+									{errors.limiteCredito && (
+										<p className="text-red-500">{errors.limiteCredito}</p>
+									)}
+								</div>
+							</div>
+						</div>
+						<Button onClick={handleSave} className="w-full mt-4">
 							{isEditing ? 'Guardar los cambios' : 'Agregar cliente'}
 						</Button>
 					</div>

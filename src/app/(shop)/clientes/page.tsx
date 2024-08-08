@@ -150,8 +150,8 @@ export default function ClientePage() {
 											<TableCell>{cliente.id}</TableCell>
 											<TableCell>{cliente.tipoCliente}</TableCell>
 											<TableCell>{cliente.documento}</TableCell>
-											<TableCell>{cliente.nombre}</TableCell>
-											<TableCell>{cliente.email}</TableCell>
+											<TableCell>{cliente.nombre || '-----'}</TableCell>
+											<TableCell>{cliente.email || '-----'}</TableCell>
 											<TableCell>
 												<Button
 													variant="default"
