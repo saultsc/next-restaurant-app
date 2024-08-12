@@ -106,16 +106,12 @@ export const MesaModal = ({ addMesa, updateMesa }: MesaModalProps) => {
 			toast.success('Mesa creada con éxito');
 		}
 		closeDialog();
-		setTimeout(() => {
-			resetFields();
-		}, 600);
+		resetFields();
 	};
 
 	const handleClose = () => {
 		closeDialog();
-		setTimeout(() => {
-			resetFields();
-		}, 600);
+		resetFields();
 	};
 
 	const handleCapacidadChange = (e: React.ChangeEvent<HTMLInputElement>) => {

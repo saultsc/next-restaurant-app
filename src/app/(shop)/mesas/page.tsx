@@ -133,18 +133,20 @@ export default function MesaPage() {
 										<TableHead>ID</TableHead>
 										<TableHead>Nombre</TableHead>
 										<TableHead>Estado</TableHead>
-										<TableHead>Capacidad</TableHead>
-										<TableHead>Acciones</TableHead>
+										<TableHead className="text-center">Capacidad</TableHead>
+										<TableHead className="text-center">Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{mesas.map((mesa: any) => (
+									{mesas.map((mesa: Mesa) => (
 										<TableRow key={mesa.id}>
 											<TableCell>{mesa.id}</TableCell>
 											<TableCell>{mesa.nombre}</TableCell>
 											<TableCell>{mesa.estado}</TableCell>
-											<TableCell>{mesa.capacidad}</TableCell>
-											<TableCell>
+											<TableCell className="text-center">
+												{mesa.capacidad}
+											</TableCell>
+											<TableCell className="text-center">
 												<Button
 													variant="default"
 													className="bg-yellow-500 hover:bg-yellow-600 text-white mr-2"

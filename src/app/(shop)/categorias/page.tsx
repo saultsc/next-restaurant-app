@@ -50,13 +50,8 @@ export default function CategoriaPage() {
 
 	const addCategoria = useCallback(async (newCategoria: Categoria) => {
 		try {
-			console.log(newCategoria);
 			const createdCategoria = await postCategoria(newCategoria as any);
-			console.log(createdCategoria);
-			setCategorias((prevCategorias) => [
-				...(prevCategorias as any),
-				{ ...createdCategoria, id: prevCategorias.length + 1 },
-			]);
+			setCategorias((prevCategorias) => [...prevCategorias, createdCategoria]);
 		} catch (error) {
 			console.log('Error adding categoria:', error);
 		}
@@ -65,8 +60,8 @@ export default function CategoriaPage() {
 	const updateCategoria = useCallback(async (updatedCategoria: Categoria) => {
 		try {
 			const result = await patchCategoria(updatedCategoria as any);
-			setCategorias((prevCategorias: any) =>
-				prevCategorias.map((categoria: any) =>
+			setCategorias((prevCategorias) =>
+				prevCategorias.map((categoria) =>
 					categoria.id === updatedCategoria.id ? result : categoria
 				)
 			);
@@ -138,15 +133,15 @@ export default function CategoriaPage() {
 									<TableRow>
 										<TableHead>Codigo</TableHead>
 										<TableHead>Nombre</TableHead>
-										<TableHead>Acciones</TableHead>
+										<TableHead className="text-center">Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{categorias.map((categoria: any) => (
+									{categorias.map((categoria) => (
 										<TableRow key={categoria.id}>
 											<TableCell>{categoria.id}</TableCell>
 											<TableCell>{categoria.nombre}</TableCell>
-											<TableCell>
+											<TableCell className="text-center">
 												<Button
 													variant="default"
 													className="bg-yellow-500 hover:bg-yellow-600 text-white mr-2"

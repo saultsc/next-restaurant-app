@@ -135,7 +135,7 @@ export default function Component() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{users.map((user: any) => (
+									{users.map((user: User) => (
 										<TableRow key={user.id}>
 											<TableCell>{user.id}</TableCell>
 											<TableCell>{user.fullName}</TableCell>

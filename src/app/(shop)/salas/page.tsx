@@ -20,6 +20,7 @@ import { ReconfirmModal } from '@/components/reconfirm-modal/ReconfirmModal';
 import { deleteSala, getSala, patchSala, postSala } from '@/action';
 import clsx from 'clsx';
 import { SalaModal } from '@/components/sala/sala-modal/SalaModal';
+import { MesasAssign } from '@/components/mesas-assign/MesasAssign';
 
 export default function SalaPage() {
 	const openDialog = useDialogStore((store) => store.openDialog);
@@ -132,15 +133,22 @@ export default function SalaPage() {
 									<TableRow>
 										<TableHead>Codigo</TableHead>
 										<TableHead>Nombre</TableHead>
-										<TableHead>Acciones</TableHead>
+										<TableHead className="text-center">Mesas</TableHead>
+										<TableHead className="text-center">Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{salas.map((sala: any) => (
+									{salas.map((sala: Sala) => (
 										<TableRow key={sala.id}>
 											<TableCell>{sala.id}</TableCell>
 											<TableCell>{sala.nombre}</TableCell>
-											<TableCell>
+											<TableCell className="text-center">
+												<MesasAssign
+													salaId={sala.id}
+													salaNombre={sala.nombre}
+												/>
+											</TableCell>
+											<TableCell className="text-center">
 												<Button
 													variant="default"
 													className="bg-yellow-500 hover:bg-yellow-600 text-white mr-2"
