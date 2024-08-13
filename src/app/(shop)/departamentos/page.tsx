@@ -142,7 +142,7 @@ export default function DepartamentoPage() {
 										<TableHead>Codigo</TableHead>
 										<TableHead>Nombre</TableHead>
 										<TableHead>Provincia</TableHead>
-										<TableHead>Acciones</TableHead>
+										<TableHead className="text-center">Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -151,7 +151,7 @@ export default function DepartamentoPage() {
 											<TableCell>{departamento.id}</TableCell>
 											<TableCell>{departamento.nombre}</TableCell>
 											<TableCell>{departamento.provincia}</TableCell>
-											<TableCell>
+											<TableCell className="text-center">
 												<Button
 													variant="default"
 													className="bg-yellow-500 hover:bg-yellow-600 text-white mr-2"

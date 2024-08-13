@@ -14,11 +14,18 @@ import { useState, useEffect, useRef } from 'react';
 import { getDepartamentos } from '@/action';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { z } from 'zod';
+import { IoInformationCircle } from 'react-icons/io5';
 
 type DepartamentoModalProps = {
 	addDepartamento: (departamento: any) => void;
 	updateDepartamento: (departamento: any) => void;
 };
+
+const departamentoSchema = z.object({
+	nombre: z.string().nonempty('El nombre es requerido'),
+	provincia: z.string().nonempty('La provincia es requerida'),
+});
 
 export const DepartamentoModal = ({
 	addDepartamento,
@@ -32,6 +39,7 @@ export const DepartamentoModal = ({
 	const [nombre, setNombre] = useState('');
 	const [provincia, setProvincia] = useState('');
 	const [isLoading, setIsLoading] = useState(true);
+	const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
 	const isMounted = useRef(false);
 
@@ -69,18 +77,13 @@ export const DepartamentoModal = ({
 	const resetFields = () => {
 		setNombre('');
 		setProvincia('');
-	};
-
-	const validateFields = () => {
-		if (!nombre) return 'El nombre es requerido';
-		if (!provincia) return 'La provincia es requerida';
-		return null;
+		setErrors({});
 	};
 
 	const handleSave = () => {
-		const validationError = validateFields();
-		if (validationError) {
-			toast.error(validationError);
+		// Verificar si hay errores antes de proceder
+		if (Object.keys(errors).some((key) => errors[key])) {
+			toast.error('Por favor, corrige los errores antes de continuar.');
 			return;
 		}
 
@@ -89,17 +92,29 @@ export const DepartamentoModal = ({
 			nombre,
 			provincia,
 		};
-		if (isEditing) {
-			updateDepartamento(departamento);
-			toast.success('Departamento actualizado con éxito');
-		} else {
-			addDepartamento(departamento);
-			toast.success('Departamento creado con éxito');
+
+		try {
+			departamentoSchema.parse(departamento);
+			if (isEditing) {
+				updateDepartamento(departamento);
+				toast.success('Departamento actualizado con éxito');
+			} else {
+				addDepartamento(departamento);
+				toast.success('Departamento creado con éxito');
+			}
+			closeDialog();
+			setTimeout(() => {
+				resetFields();
+			}, 600);
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				const newErrors: { [key: string]: string } = {};
+				error.errors.forEach((err) => {
+					newErrors[err.path[0]] = err.message;
+				});
+				setErrors(newErrors);
+			}
 		}
-		closeDialog();
-		setTimeout(() => {
-			resetFields();
-		}, 600);
 	};
 
 	const handleClose = () => {
@@ -108,6 +123,25 @@ export const DepartamentoModal = ({
 			resetFields();
 		}, 600);
 	};
+
+	const handleInputChange =
+		(setter: React.Dispatch<React.SetStateAction<string>>, field: string) =>
+		(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+			const value = e.target.value;
+			setter(value);
+
+			let errorMessage = '';
+			if (field === 'nombre' && !value) {
+				errorMessage = 'El nombre es requerido';
+			} else if (field === 'provincia' && !value) {
+				errorMessage = 'La provincia es requerida';
+			}
+
+			setErrors((prevErrors) => ({
+				...prevErrors,
+				[field]: errorMessage,
+			}));
+		};
 
 	return (
 		<>
@@ -128,14 +162,30 @@ export const DepartamentoModal = ({
 					<div className="grid gap-4 py-4">
 						<Input
 							value={nombre}
-							onChange={(e) => setNombre(e.target.value)}
+							onChange={handleInputChange(setNombre, 'nombre')}
 							placeholder="Nombre"
 						/>
+						<div className="h-4">
+							{errors.nombre && (
+								<p className="text-red-500 flex items-center">
+									<IoInformationCircle className="mr-1" />
+									{errors.nombre}
+								</p>
+							)}
+						</div>
 						<Input
 							value={provincia}
-							onChange={(e) => setProvincia(e.target.value)}
+							onChange={handleInputChange(setProvincia, 'provincia')}
 							placeholder="Provincia"
 						/>
+						<div className="h-4">
+							{errors.provincia && (
+								<p className="text-red-500 flex items-center">
+									<IoInformationCircle className="mr-1" />
+									{errors.provincia}
+								</p>
+							)}
+						</div>
 						<Button onClick={handleSave} className="w-full">
 							{isEditing ? 'Guardar los cambios' : 'Agregar departamento'}
 						</Button>

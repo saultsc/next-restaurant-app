@@ -14,11 +14,17 @@ import { useState, useEffect, useRef } from 'react';
 import { getSala } from '@/action';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { z } from 'zod';
+import { IoInformationCircle } from 'react-icons/io5';
 
 type SalaModalProps = {
 	addSala: (sala: any) => void;
 	updateSala: (sala: any) => void;
 };
+
+const salaSchema = z.object({
+	nombre: z.string().nonempty('El nombre es requerido'),
+});
 
 export const SalaModal = ({ addSala, updateSala }: SalaModalProps) => {
 	const isDialogOpen = useDialogStore((store) => store.isDialogOpen && !store.isDeleting);
@@ -28,6 +34,7 @@ export const SalaModal = ({ addSala, updateSala }: SalaModalProps) => {
 
 	const [nombre, setNombre] = useState('');
 	const [isLoading, setIsLoading] = useState(true);
+	const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
 	const isMounted = useRef(false);
 
@@ -46,7 +53,7 @@ export const SalaModal = ({ addSala, updateSala }: SalaModalProps) => {
 					const sala = response.data[0];
 
 					if (sala && isMounted.current) {
-						setNombre(sala.nombre ?? '');
+						setNombre(sala.nombre);
 					}
 				} catch (error) {
 					console.log('Error fetching sala:', error);
@@ -54,52 +61,81 @@ export const SalaModal = ({ addSala, updateSala }: SalaModalProps) => {
 					setIsLoading(false);
 				}
 			} else {
+				resetFields();
 				setIsLoading(false);
 			}
 		};
 
-		fetchSala();
-	}, [isEditing, currentItemId]);
+		if (isDialogOpen) {
+			fetchSala();
+		}
+	}, [isEditing, currentItemId, isDialogOpen]);
 
 	const resetFields = () => {
 		setNombre('');
-	};
-
-	const validateFields = () => {
-		if (!nombre) return 'El nombre es requerido';
-		return null;
+		setErrors({});
 	};
 
 	const handleSave = () => {
-		const validationError = validateFields();
-		if (validationError) {
-			toast.error(validationError);
+		// Verificar si hay errores antes de proceder
+		const newErrors: { [key: string]: string } = {};
+		if (!nombre) {
+			newErrors.nombre = 'El nombre es requerido';
+		}
+
+		if (Object.keys(newErrors).length > 0) {
+			setErrors(newErrors);
+			toast.error('Por favor, corrige los errores antes de continuar.', {
+				toastId: 'error-toast',
+			});
 			return;
 		}
 
-		const sala = {
-			id: currentItemId,
-			nombre,
-		};
-		if (isEditing) {
-			updateSala(sala);
-			toast.success('Sala actualizada con éxito');
-		} else {
-			addSala(sala);
-			toast.success('Sala creada con éxito');
-		}
-		closeDialog();
-		setTimeout(() => {
+		const sala = { id: currentItemId, nombre };
+
+		try {
+			salaSchema.parse(sala);
+			if (isEditing) {
+				updateSala(sala);
+				toast.success('Sala actualizada con éxito', { toastId: 'success-toast' });
+			} else {
+				addSala(sala);
+				toast.success('Sala creada con éxito', { toastId: 'success-toast' });
+			}
+			closeDialog();
 			resetFields();
-		}, 600);
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				const newErrors: { [key: string]: string } = {};
+				error.errors.forEach((err) => {
+					newErrors[err.path[0]] = err.message;
+				});
+				setErrors(newErrors);
+			}
+		}
 	};
 
 	const handleClose = () => {
 		closeDialog();
-		setTimeout(() => {
-			resetFields();
-		}, 600);
+		resetFields();
 	};
+
+	const handleInputChange =
+		(setter: React.Dispatch<React.SetStateAction<string>>, field: string) =>
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = e.target.value;
+			setter(value);
+
+			let errorMessage = '';
+			if (field === 'nombre' && !value) {
+				errorMessage = 'El nombre es requerido';
+			}
+
+			setErrors((prevErrors) => ({
+				...prevErrors,
+				[field]: errorMessage,
+			}));
+		};
 
 	return (
 		<>
@@ -118,16 +154,24 @@ export const SalaModal = ({ addSala, updateSala }: SalaModalProps) => {
 					<div className="grid gap-4 py-4">
 						<Input
 							value={nombre}
-							onChange={(e) => setNombre(e.target.value)}
-							placeholder="Nombre"
+							onChange={handleInputChange(setNombre, 'nombre')}
+							placeholder="Nombre de la sala"
 						/>
+						<div className="h-4">
+							{errors.nombre && (
+								<p className="text-red-500 flex items-center">
+									<IoInformationCircle className="mr-1" />
+									{errors.nombre}
+								</p>
+							)}
+						</div>
 						<Button onClick={handleSave} className="w-full">
 							{isEditing ? 'Guardar los cambios' : 'Agregar sala'}
 						</Button>
 					</div>
 				</DialogContent>
+				<ToastContainer />
 			</Dialog>
-			<ToastContainer />
 		</>
 	);
 };

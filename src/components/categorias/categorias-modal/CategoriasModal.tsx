@@ -14,11 +14,17 @@ import { useState, useEffect, useRef } from 'react';
 import { getCategorias } from '@/action';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { z } from 'zod';
+import { IoInformationCircle } from 'react-icons/io5';
 
 type CategoriaModalProps = {
 	addCategoria: (categoria: any) => void;
 	updateCategoria: (categoria: any) => void;
 };
+
+const categoriaSchema = z.object({
+	nombre: z.string().nonempty('El nombre es requerido'),
+});
 
 export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModalProps) => {
 	const isDialogOpen = useDialogStore((store) => store.isDialogOpen && !store.isDeleting);
@@ -28,6 +34,7 @@ export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModal
 
 	const [nombre, setNombre] = useState('');
 	const [isLoading, setIsLoading] = useState(true);
+	const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
 	const isMounted = useRef(false);
 
@@ -63,17 +70,13 @@ export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModal
 
 	const resetFields = () => {
 		setNombre('');
-	};
-
-	const validateFields = () => {
-		if (!nombre) return 'El nombre es requerido';
-		return null;
+		setErrors({});
 	};
 
 	const handleSave = () => {
-		const validationError = validateFields();
-		if (validationError) {
-			toast.error(validationError);
+		// Verificar si hay errores antes de proceder
+		if (Object.keys(errors).some((key) => errors[key])) {
+			toast.error('Por favor, corrige los errores antes de continuar.');
 			return;
 		}
 
@@ -81,17 +84,29 @@ export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModal
 			id: currentItemId,
 			nombre,
 		};
-		if (isEditing) {
-			updateCategoria(categoria);
-			toast.success('Categoría actualizada con éxito');
-		} else {
-			addCategoria(categoria);
-			toast.success('Categoría creada con éxito');
+
+		try {
+			categoriaSchema.parse(categoria);
+			if (isEditing) {
+				updateCategoria(categoria);
+				toast.success('Categoría actualizada con éxito');
+			} else {
+				addCategoria(categoria);
+				toast.success('Categoría creada con éxito');
+			}
+			closeDialog();
+			setTimeout(() => {
+				resetFields();
+			}, 600);
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				const newErrors: { [key: string]: string } = {};
+				error.errors.forEach((err) => {
+					newErrors[err.path[0]] = err.message;
+				});
+				setErrors(newErrors);
+			}
 		}
-		closeDialog();
-		setTimeout(() => {
-			resetFields();
-		}, 600);
 	};
 
 	const handleClose = () => {
@@ -100,6 +115,23 @@ export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModal
 			resetFields();
 		}, 600);
 	};
+
+	const handleInputChange =
+		(setter: React.Dispatch<React.SetStateAction<string>>, field: string) =>
+		(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+			const value = e.target.value;
+			setter(value);
+
+			let errorMessage = '';
+			if (field === 'nombre' && !value) {
+				errorMessage = 'El nombre es requerido';
+			}
+
+			setErrors((prevErrors) => ({
+				...prevErrors,
+				[field]: errorMessage,
+			}));
+		};
 
 	return (
 		<>
@@ -120,9 +152,17 @@ export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModal
 					<div className="grid gap-4 py-4">
 						<Input
 							value={nombre}
-							onChange={(e) => setNombre(e.target.value)}
+							onChange={handleInputChange(setNombre, 'nombre')}
 							placeholder="Nombre"
 						/>
+						<div className="h-4">
+							{errors.nombre && (
+								<p className="text-red-500 flex items-center">
+									<IoInformationCircle className="mr-1" />
+									{errors.nombre}
+								</p>
+							)}
+						</div>
 						<Button onClick={handleSave} className="w-full">
 							{isEditing ? 'Guardar los cambios' : 'Agregar categoría'}
 						</Button>

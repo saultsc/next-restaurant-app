@@ -47,7 +47,6 @@ export const useDialogStore = create<State>((set) => ({
 			isEditing: false,
 			isDeleting: false,
 			dialogTitle: '',
-			currentItemId: null,
 		});
 	},
 }));
