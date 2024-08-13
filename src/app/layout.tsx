@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
-import { inter, titleFonts } from '@/config/fonts';
+import { titleFonts } from '@/config/fonts';
 
 export const metadata: Metadata = {
 	title: 'Restaurant | App',

@@ -12,7 +12,7 @@ import {
 import { useDialogStore } from '@/store';
 import { useState, useEffect, useRef } from 'react';
 import { getCategorias } from '@/action';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { z } from 'zod';
 import { IoInformationCircle } from 'react-icons/io5';
@@ -76,7 +76,6 @@ export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModal
 	const handleSave = () => {
 		// Verificar si hay errores antes de proceder
 		if (Object.keys(errors).some((key) => errors[key])) {
-			toast.error('Por favor, corrige los errores antes de continuar.');
 			return;
 		}
 
@@ -169,7 +168,6 @@ export const CategoriaModal = ({ addCategoria, updateCategoria }: CategoriaModal
 					</div>
 				</DialogContent>
 			</Dialog>
-			<ToastContainer />
 		</>
 	);
 };

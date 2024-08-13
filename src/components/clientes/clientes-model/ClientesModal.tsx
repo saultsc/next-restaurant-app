@@ -112,7 +112,6 @@ export const ClientModal = ({ addClient, updateClient }: ClientModalProps) => {
 	const handleSave = () => {
 		// Verificar si hay errores antes de proceder
 		if (Object.keys(errors).some((key) => errors[key])) {
-			toast.error('Por favor, corrige los errores antes de continuar.');
 			return;
 		}
 

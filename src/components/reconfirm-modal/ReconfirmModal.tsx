@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { useDialogStore } from '@/store';
 import { IoTrashOutline } from 'react-icons/io5';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface ReconfirmModalProps {
@@ -53,7 +53,6 @@ export const ReconfirmModal = ({ deleteEntity, entityName }: ReconfirmModalProps
 					</div>
 				</DialogContent>
 			</Dialog>
-			<ToastContainer />
 		</>
 	);
 };

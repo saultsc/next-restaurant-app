@@ -12,7 +12,7 @@ import {
 import { useDialogStore } from '@/store';
 import { useState, useEffect, useRef } from 'react';
 import { getUser } from '@/action';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { z } from 'zod';
 import { IoInformationCircle } from 'react-icons/io5';
@@ -256,7 +256,6 @@ export const UserModal = ({ addUser, updateUser }: UserModalProps) => {
 						</Button>
 					</div>
 				</DialogContent>
-				<ToastContainer />
 			</Dialog>
 		</>
 	);
